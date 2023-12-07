@@ -1,0 +1,3 @@
+[submodule "reflasher-cli"]
+	path = reflasher-cli
+	url = git@github.com:phwolf/reflasher-cli.git
