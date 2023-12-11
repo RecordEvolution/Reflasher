@@ -27,9 +27,9 @@ watch(language, (newVal) => {
 <template>
   <v-container>
     <v-list-item>
-      <v-list-item-title class="title">
+      <v-toolbar-title>
         {{ $t('settings') }}
-      </v-list-item-title>
+      </v-toolbar-title>
 
       <v-list-item-subtitle>
         {{ $t('settings_subtitle') }}
@@ -41,6 +41,7 @@ watch(language, (newVal) => {
     <v-list>
       <v-list-item>
         <v-select
+          hide-details
           v-model="language"
           :label="$t('choose_language')"
           :items="availableLanguages"
@@ -53,6 +54,5 @@ watch(language, (newVal) => {
         <v-switch color="primary" v-model="darkMode" :label="`${$t('dark_mode')}`"></v-switch>
       </v-list-item>
     </v-list>
-
   </v-container>
 </template>

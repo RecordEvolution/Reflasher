@@ -2,11 +2,16 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
+import { createPinia } from 'pinia'
 import { en, de } from './locales'
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n'
 import { createI18n, useI18n } from 'vue-i18n'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+
+import './main.css'
+import 'roboto-fontface/css/roboto/roboto-fontface.css'
+import '@mdi/font/css/materialdesignicons.css'
 
 const i18n = createI18n({
   legacy: false, // Vuetify does not support the legacy mode of vue-i18n
@@ -54,4 +59,11 @@ const vuetify = createVuetify({
   }
 })
 
-createApp(App).use(i18n).use(vuetify).mount('#app')
+const app = createApp(App)
+const pinia = createPinia()
+
+app.use(i18n)
+app.use(vuetify)
+app.use(pinia)
+
+app.mount('#app')

@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import reflasherLogoWhite from './assets/flasher-white.svg'
 import Settings from './components/Settings.vue'
 import Drives from './components/Drives.vue'
-import { ref } from 'vue'
+import Devices from './components/Devices.vue'
+import SudoDialog from './components/SudoDialog.vue'
 
+const sudoDialog = ref()
 const drivesDrawer = ref(false)
 const settingsDrawer = ref(false)
 
@@ -14,6 +17,10 @@ function toggleDrivesDrawer() {
 function toggleSettingsDrawer() {
   settingsDrawer.value = !settingsDrawer.value
 }
+
+watch(sudoDialog, (newVal) => {
+  window.sudoDialog = newVal
+})
 </script>
 
 <template>
@@ -33,12 +40,6 @@ function toggleSettingsDrawer() {
     <!-- -------------------- App bar -------------------- -->
 
     <v-app-bar app color="primary">
-      <!-- <v-app-bar-nav-icon
-    color="white"
-    @click.stop="drawerDrives = !drawerDrives"
-  >
-  </v-app-bar-nav-icon> -->
-
       <v-btn min-width="164px" @click.stop="toggleDrivesDrawer" variant="outlined" color="accent">
         {{ $t('drives') }}
       </v-btn>
@@ -59,14 +60,6 @@ function toggleSettingsDrawer() {
 
       <v-spacer></v-spacer>
 
-      <!-- <v-btn icon
-    @click="drawerSettings = !drawerSettings"
-    >
-    <v-icon color="white">
-      mdi-dots-vertical
-    </v-icon>
-  </v-btn> -->
-
       <v-btn min-width="164px" @click.stop="toggleSettingsDrawer" variant="outlined" color="accent">
         {{ $t('settings') }}
       </v-btn>
@@ -75,7 +68,9 @@ function toggleSettingsDrawer() {
     <!-- -------------------- Devices -------------------- -->
 
     <v-main>
-      <v-container fluid ml-0 mr-0 mt-0 mb-12 pl-12 pr-12> </v-container>
+      <v-container fluid ml-0 mr-0 mt-0 mb-12 pl-12 pr-12>
+        <Devices />
+      </v-container>
     </v-main>
 
     <v-main v-if="false">
@@ -161,6 +156,8 @@ function toggleSettingsDrawer() {
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <SudoDialog ref="sudoDialog" />
   </v-app>
 </template>
 
