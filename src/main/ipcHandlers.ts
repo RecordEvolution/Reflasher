@@ -1,7 +1,7 @@
 import { BrowserWindow, OpenDialogOptions, dialog, ipcMain } from 'electron'
 import { platform } from 'os'
 import { FlashItem, RPC } from '../types'
-import { automountDrive, listDrives, unmountDisk } from '../main/api/drives'
+import { automountDrive, listDrives, listPartitions, unmountDisk } from '../main/api/drives'
 import { scanner } from 'etcher-sdk'
 import { readFile } from 'fs/promises'
 import { OpenMode } from 'fs'
@@ -16,7 +16,8 @@ function handleListDrives() {
 }
 
 function handleUnmount(_, drivePath: string) {
-  return unmountDisk(drivePath)
+  unmountDisk(drivePath)
+  return 
 }
 
 function handleMount(_, drive: Drive) {
@@ -103,8 +104,13 @@ function handleCancelFlashing(id: number) {
   return cancelFlashing(id)
 }
 
+function handleListPartitions(drive: Drive, password?: string) {
+  return listPartitions(drive, password)
+}
+
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.ListDrives, handleListDrives)
+  ipcMain.handle(RPC.ListPartitions, (_, drive, password) => handleListPartitions(drive, password))
   ipcMain.handle(RPC.Unmount, handleUnmount)
   ipcMain.handle(RPC.Mount, handleMount)
   ipcMain.handle(RPC.ChooseFile, () => handleChooseFile(mainWindow))

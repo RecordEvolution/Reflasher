@@ -4,7 +4,8 @@ import { elevatedChildProcess, elevatedExecUnix, execAsync, getSudoPassword } fr
 export async function listDrives() {
   const drives = await listdrives()
   return drives.filter(
-    (d) => !d.mountpoints.find((m) => m.path.includes('boot')) && d.busType !== 'UNKNOWN'
+    (d) =>
+      !d.mountpoints.find((m) => m.path.includes('boot')) && d.busType !== 'UNKNOWN' && !d.isSystem
   )
 }
 
@@ -58,16 +59,31 @@ function parseUnixPartitionOutput(output: string) {
   return partitions
 }
 
+type DarwinPartition = { typeName: string; name?: string; size: string; identifier: string }
 const parseDarwinPartitionOutput = (output: string) => {
-  const splitOutput = output.split('\n')
-  splitOutput.splice(0, 3) // remove title, header and disk partition
+  const lines = output.split('\n').slice(3) // remove title, header, and disk partition
+  const partitions: DarwinPartition[] = []
 
-  const partitions: { typeName: string; size: string; identifier: string }[] = []
-  for (const line of splitOutput) {
-    const [_, typeName, size, sizeUnit, identifier] = line.split(/\s/).filter(Boolean)
+  for (const line of lines) {
+    const splitLine = line.split(/\s+/)
 
-    if (identifier !== '-') {
-      partitions.push({ typeName, size: `${size} ${sizeUnit}`, identifier })
+    if (splitLine.length === 6 || splitLine.length === 7) {
+      const [, , typeName, ...rest] = splitLine
+      const [size, sizeUnit, identifier] = rest.slice(-3)
+
+      if (identifier !== '-') {
+        const partition: DarwinPartition = {
+          typeName,
+          size: `${size} ${sizeUnit}`,
+          identifier
+        }
+
+        if (splitLine.length === 7) {
+          partition.name = rest[0]
+        }
+
+        partitions.push(partition)
+      }
     }
   }
 
@@ -88,24 +104,51 @@ export const automountDrive = (drive: Drive) => {
   }
 }
 
-export const automountDriveDarwin = async (drive: Drive) => {
+export const listPartitionsDarwin = async (drive: Drive) => {
   const output = await execAsync(`diskutil list ${drive.device}`)
-  const partitions = parseDarwinPartitionOutput(output)
+  return parseDarwinPartitionOutput(output)
+}
 
+export const listPartitionsLinux = async (drive: Drive, password: string) => {
+  const fdiskOutput = await elevatedExecUnix(`fdisk -l ${drive.device}`, password)
+  return parseUnixPartitionOutput(fdiskOutput)
+}
+
+export const listPartitions = async (drive: Drive, password?: string) => {
+  switch (process.platform) {
+    case 'darwin': {
+      return listPartitionsDarwin(drive)
+    }
+    case 'linux': {
+      return listPartitionsLinux(drive, password!)
+    }
+    case 'win32': {
+      return
+    }
+  }
+}
+
+export const automountDriveDarwin = async (drive: Drive) => {
+  const partitions = await listPartitionsDarwin(drive)
   for (const partition of partitions) {
-    await execAsync(`diskutil mount /dev/${partition.typeName}`)
+    try {
+      await execAsync(`diskutil mount /dev/${partition.identifier}`)
+    } catch (error) {
+      console.error('failed to mount:', partition.identifier, error)
+    }
   }
 }
 
 export const automountDriveLinux = async (drive: Drive) => {
-  const sudoPassword = getSudoPassword()
-  const fdiskOutput = await elevatedExecUnix(`fdisk -l ${drive.device}`, sudoPassword)
-  const partitions = parseUnixPartitionOutput(fdiskOutput)
-
+  const partitions = await listPartitionsLinux(drive, getSudoPassword())
   await execAsync('udevadm settle')
 
   for (const partition of partitions) {
-    await execAsync(`udisksctl mount -b ${partition.device}`)
+    try {
+      await execAsync(`udisksctl mount -b ${partition.device}`)
+    } catch (error) {
+      console.error('failed to mount:', partition.device, error)
+    }
   }
 }
 

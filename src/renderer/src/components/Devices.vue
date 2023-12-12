@@ -347,7 +347,7 @@ watch(drives, (updatedDl) => {
 }
 
 .v-expansion-panels {
-  max-height: 355px;
+  max-height: 325px;
   overflow: auto;
 }
 .header {

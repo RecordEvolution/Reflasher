@@ -9,6 +9,7 @@ import { WiFiNetwork } from 'node-wifi'
 // Custom APIs for renderer
 const api = {
   listDrives: () => ipcRenderer.invoke(RPC.ListDrives) as Promise<Drive[]>,
+  listPartitions: (drive: Drive, password?: string) => ipcRenderer.invoke(RPC.ListPartitions, drive, password),
   unmount: (path: string) => ipcRenderer.invoke(RPC.Unmount, path) as Promise<void>,
   mount: (drive: Drive) => ipcRenderer.invoke(RPC.Mount, drive) as Promise<void>,
   chooseFile: () => ipcRenderer.invoke(RPC.ChooseFile) as Promise<Electron.OpenDialogReturnValue>,
