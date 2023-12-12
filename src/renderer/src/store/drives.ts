@@ -1,3 +1,4 @@
+import { deepToRaw } from '@renderer/utils'
 import { Drive } from 'drivelist'
 import { defineStore } from 'pinia'
 
@@ -33,13 +34,12 @@ export const useDrivesStore = () => {
       async fetchDrives() {
         this.items = await window.api.listDrives()
       },
+      async mountDrive(drive: Drive) {
+        return window.api.mount(deepToRaw(drive))
+      },
       async unmountDrive(drive: Drive) {
-        try {
-          await window.sudoDialog.openDialog()
-          return window.api.unmount(drive.device)
-        } catch (error) {
-          console.error(error)
-        }
+        await window.sudoDialog.openDialog()
+        return window.api.unmount(drive.device)
       }
     }
   })

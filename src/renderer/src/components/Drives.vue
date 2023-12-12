@@ -72,6 +72,7 @@ const store = useDrivesStore()
                   size="x-small"
                   variant="text"
                   v-bind="props"
+                  @click="store.mountDrive(item)"
                 >
                 </v-btn>
               </template>

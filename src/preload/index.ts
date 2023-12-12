@@ -10,6 +10,7 @@ import { WiFiNetwork } from 'node-wifi'
 const api = {
   listDrives: () => ipcRenderer.invoke(RPC.ListDrives) as Promise<Drive[]>,
   unmount: (path: string) => ipcRenderer.invoke(RPC.Unmount, path) as Promise<void>,
+  mount: (drive: Drive) => ipcRenderer.invoke(RPC.Mount, drive) as Promise<void>,
   chooseFile: () => ipcRenderer.invoke(RPC.ChooseFile) as Promise<Electron.OpenDialogReturnValue>,
   readFile: (
     path: string,

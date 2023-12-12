@@ -50,6 +50,30 @@ export const elevatedChildProcess = (
   return Promise.resolve() as any
 }
 
+export const execAsync = async (command: string): Promise<string> => {
+  return new Promise((res, rej) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        rej(error.message)
+        return
+      }
+
+      if (stderr) {
+        rej(stderr)
+        return
+      }
+
+      // Parse and process the stdout here
+      res(stdout)
+    })
+  })
+}
+
+export const elevatedExecUnix = async (command: string, password: string): Promise<string> => {
+  const fullCommand = `echo ${password} | sudo -S ${command}`
+  return execAsync(fullCommand)
+}
+
 const elevatedChildProcessUnix = async (
   code: string,
   password: string,

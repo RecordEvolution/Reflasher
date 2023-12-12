@@ -1,20 +1,22 @@
-import { waitForMount } from './drives'
+import { automountDriveLinux, waitForMount } from './drives'
 import { ChildProcessWithoutNullStreams } from 'child_process'
 import { FlashItem } from '../../types'
 import { elevatedChildProcess, getSudoPassword } from './permissions'
 import { copyFile, rename, unlink, writeFile } from 'fs/promises'
 import ImageManager from './boards'
 import path from 'path'
-import { tmpdir } from 'os'
+import { Drive } from 'drivelist'
 
 const activeFlashProcesses = new Map<number, ChildProcessWithoutNullStreams>()
 export const imageManager = new ImageManager()
 imageManager.createReflasherDirIfNotExists()
 
-const copyConfigFile = async (driveDescription: string, reswarmConfigPath: string) => {
-  const mountedDrive = await waitForMount(driveDescription)
+const copyConfigFile = async (drive: Drive, reswarmConfigPath: string) => {
+  if (process.platform === 'linux') {
+    await automountDriveLinux(drive)
+  }
 
-  console.log('Device mounted, copying configuration ...')
+  const mountedDrive = await waitForMount(drive.description)
 
   if (mountedDrive.mountpoints.length === 0) {
     throw new Error('Mountpoint not found!')
@@ -22,28 +24,18 @@ const copyConfigFile = async (driveDescription: string, reswarmConfigPath: strin
 
   const targetPath = mountedDrive.mountpoints[0].path
 
-  console.log(
-    `Copy ${reswarmConfigPath} ===> ${path.join(targetPath, path.basename(reswarmConfigPath))}`
-  )
-
-  try {
-    await copyFile(reswarmConfigPath, path.join(targetPath, path.basename(reswarmConfigPath)))
-    console.log('Copied configuration')
-  } catch (e) {
-    console.log('The file could not be copied')
-    throw e
-  }
+  return copyFile(reswarmConfigPath, path.join(targetPath, path.basename(reswarmConfigPath)))
 }
 
 export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string) => void) => {
   if (!flashItem.drive || !flashItem.fullPath) throw new Error('drive not set')
 
   let imagePath = flashItem.fullPath
+  const image = flashItem.reswarm?.config?.board.latestImages[0]
+
   if (flashItem.reswarm) {
     // Update .reswarm file (for WiFi information, etc.)
     await writeFile(flashItem.fullPath, JSON.stringify(flashItem.reswarm.config))
-
-    const image = flashItem.reswarm?.config?.board.latestImages[0]
 
     if (!image) throw new Error('latest image is empty')
 
@@ -107,7 +99,7 @@ export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string)
         source,
         destinations: [_blockDevice],
         onFail: (_, error) => {
-          process.stderr.write(error.toString())
+          console.log(error)
           process.exit(1)
         },
         onProgress: (progress) => {
@@ -118,7 +110,8 @@ export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string)
       })
       
       progressData.type = "${flashItem.reswarm ? 'configuring' : 'finished'}"
-      process.stdout.write(JSON.stringify(progressData))
+      const finalPayload = JSON.stringify(progressData)
+      process.stdout.write(finalPayload)
     }
 
     flash()
@@ -131,8 +124,8 @@ export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string)
     undefined,
     async (code, signal) => {
       activeFlashProcesses.delete(flashItem.id)
-      if (code === 0 && signal === null && flashItem.reswarm) {
-        await copyConfigFile(flashItem.drive?.description!, flashItem.fullPath)
+      if (code === 0 && signal === null && flashItem.reswarm && image?.osvariant === 'image') {
+        await copyConfigFile(flashItem.drive!, flashItem.fullPath)
         onStdout(
           JSON.stringify({
             averageSpeed: 0,
@@ -156,92 +149,3 @@ export const cancelFlashing = async (id: number) => {
     flashProcess.kill('SIGTERM')
   }
 }
-
-// export class FlashManager {
-//   private _imageFile: sourceDestination.File
-//   private _blockDevice: sourceDestination.BlockDevice
-
-//   constructor(imagePath: string, targetDrive: Drive) {
-//     // preparing source image
-//     this._imageFile = new sourceDestination.File({
-//       path: imagePath
-//     })
-
-//     // preparing target
-//     this._blockDevice = new sourceDestination.BlockDevice({
-//       drive: targetDrive,
-//       write: true,
-//       unmountOnSuccess: false
-//     })
-//   }
-
-//   async flash({
-//     onFailure,
-//     flashProgress,
-//     verifyProgress,
-//     onProgress
-//   }: {
-//     onFailure?: (e: Error) => void
-//     flashProgress?: (p: number) => void
-//     verifyProgress?: (p: number) => void
-//     onProgress?: (progress: multiWrite.MultiDestinationProgress) => void
-//   }) {
-//     const source = await this._imageFile.getInnerSource()
-
-//     // flashing proccess (multiWrite.pipeSourceToDestinations would also work. )
-//     await multiWrite.decompressThenFlash({
-//       source,
-//       destinations: [this._blockDevice],
-//       onFail: (_, error) => {
-//         if (onFailure) {
-//           onFailure(error)
-//         }
-//       },
-//       onProgress: (progress) => {
-//         if (onProgress) {
-//           onProgress(progress)
-//         }
-
-//         if (progress.type === 'flashing') {
-//           if (progress.percentage) {
-//             if (flashProgress) {
-//               flashProgress(progress.percentage)
-//             }
-//           }
-//         }
-//         if (progress.type === 'verifying') {
-//           if (progress.percentage) {
-//             if (verifyProgress) {
-//               verifyProgress(progress.percentage)
-//             }
-//           }
-//         }
-//       },
-//       verify: true
-//     })
-//   }
-
-//   async copyConfigFile(driveDescription: string, reswarmConfigPath: string) {
-//     const mountedDrive = await waitForMount(driveDescription)
-
-//     console.log('Device mounted, copying configuration ...')
-
-//     if (mountedDrive.mountpoints.length === 0) {
-//       throw new Error('Mountpoint not found!')
-//     }
-
-//     const targetPath = mountedDrive.mountpoints[0].path
-
-//     console.log(
-//       `Copy ${reswarmConfigPath} ===> ${path.join(targetPath, path.basename(reswarmConfigPath))}`
-//     )
-
-//     try {
-//       await copyFile(reswarmConfigPath, path.join(targetPath, path.basename(reswarmConfigPath)))
-//       console.log('Copied configuration')
-//     } catch (e) {
-//       console.log('The file could not be copied')
-//       throw e
-//     }
-//   }
-// }

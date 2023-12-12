@@ -4,6 +4,7 @@ import { WriteStep } from 'etcher-sdk/build/multi-write'
 export enum RPC {
   ListDrives = 'list-drives',
   Unmount = 'unmount',
+  Mount = 'mount',
   ChooseFile = 'choose-file',
   ReadFile = 'read-file',
   GetSupportedBoards = 'get-supported-boards',

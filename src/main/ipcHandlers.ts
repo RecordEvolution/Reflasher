@@ -1,7 +1,7 @@
 import { BrowserWindow, OpenDialogOptions, dialog, ipcMain } from 'electron'
 import { platform } from 'os'
 import { FlashItem, RPC } from '../types'
-import { listDrives, unmountDisk } from '../main/api/drives'
+import { automountDrive, listDrives, unmountDisk } from '../main/api/drives'
 import { scanner } from 'etcher-sdk'
 import { readFile } from 'fs/promises'
 import { OpenMode } from 'fs'
@@ -9,6 +9,7 @@ import { Abortable } from 'events'
 import { scanNetworks } from './api/wifi'
 import { cancelFlashing, flashDevice, imageManager } from './api/flash'
 import { isSudoPasswordSet, setSudoPassword } from './api/permissions'
+import { Drive } from 'drivelist'
 
 function handleListDrives() {
   return listDrives()
@@ -16,6 +17,10 @@ function handleListDrives() {
 
 function handleUnmount(_, drivePath: string) {
   return unmountDisk(drivePath)
+}
+
+function handleMount(_, drive: Drive) {
+  return automountDrive(drive)
 }
 
 function handleDriveScanner(mainWindow: BrowserWindow) {
@@ -101,6 +106,7 @@ function handleCancelFlashing(id: number) {
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.ListDrives, handleListDrives)
   ipcMain.handle(RPC.Unmount, handleUnmount)
+  ipcMain.handle(RPC.Mount, handleMount)
   ipcMain.handle(RPC.ChooseFile, () => handleChooseFile(mainWindow))
   ipcMain.handle(RPC.ReadFile, handleReadFile)
   ipcMain.handle(RPC.GetSupportedBoards, handleSupportedBoards)
