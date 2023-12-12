@@ -81,6 +81,7 @@ watch(showDialog, (newVal) => {
             :append-icon="showSudoPassword ? 'mdi-eye' : 'mdi-eye-off'"
             :type="showSudoPassword ? 'text' : 'password'"
             name="input-sudoPasswd"
+            variant="outlined"
             :label="$t('admin_password')"
             @click:append="showSudoPassword = !showSudoPassword"
             v-on:keyup.enter="setSudoPassword"

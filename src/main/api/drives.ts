@@ -21,7 +21,6 @@ export const waitForMount = async (description: string) => {
     console.log('Checking mounted drives ...')
     const drives = await listdrives()
     const drive = drives.filter((d) => d.isRemovable && d.description === description)
-    console.log(drive)
     if (drive.length === 1) {
       if (drive[0].mountpoints.length !== 0) {
         return drive[0]

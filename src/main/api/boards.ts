@@ -1,6 +1,6 @@
-import { homedir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { createGunzip } from 'node:zlib'
-import { access, mkdir, readFile } from 'node:fs/promises'
+import { access, mkdir, readFile, rename } from 'node:fs/promises'
 import { createWriteStream, createReadStream } from 'node:fs'
 import https from 'node:https'
 import path from 'node:path'
@@ -76,19 +76,45 @@ export default class ImageManager {
     }
   }
 
-  downloadImageToFile(image: ImageInfo, progress?: (p: number) => void): Promise<void> {
-    const writeStream = createWriteStream(path.join(this.reflasherConfigPath, image.file))
+  calculateSpeed = (
+    written: number,
+    elapsedTime: number
+  ): { speed: number; averageSpeed: number } => {
+    const speed = written / elapsedTime // Bytes per second
+    const averageSpeed = written / (elapsedTime / 1000) // Bytes per second (convert elapsedTime to seconds)
+    return { speed, averageSpeed }
+  }
+
+  calculateETA = (written: number, speed: number, totalSize: number): number => {
+    const remainingBytes = totalSize - written
+    return remainingBytes / speed // Seconds
+  }
+
+  async downloadImageToFile(
+    image: ImageInfo,
+    tempPath: string,
+    progress?: (payload: {
+      percentage: number
+      averageSpeed: number
+      speed: number
+      eta: number
+      bytesWritten: number
+    }) => void
+  ) {
+    const writeStream = createWriteStream(tempPath)
 
     let written = 0
-    let lastPercentage = 0
+    let startTime: number | null = null
 
     if (progress) {
-      progress(0)
+      progress({ averageSpeed: 0, eta: 0, percentage: 0, speed: 0, bytesWritten: 0 })
     }
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       https
         .get(image.download, (res) => {
+          startTime = Date.now()
+
           res.on('data', (buf) => {
             writeStream.write(buf, (err) => {
               if (err) {
@@ -96,11 +122,11 @@ export default class ImageManager {
               }
               if (progress) {
                 written += buf.length
-                const prog = Math.floor((written / image.size) * 100)
-                if (prog > lastPercentage) {
-                  progress(prog)
-                  lastPercentage = prog
-                }
+                const elapsedTime = (Date.now() - startTime!) / 1000 // Convert to seconds
+                const { speed, averageSpeed } = this.calculateSpeed(written, elapsedTime)
+                const eta = this.calculateETA(written, speed, image.size)
+                const percentage = (written / image.size) * 100
+                progress({ percentage, averageSpeed, eta, speed, bytesWritten: written })
               }
             })
           })
@@ -115,13 +141,23 @@ export default class ImageManager {
           reject(err)
         })
         .on('close', () => {
-          resolve()
+          resolve(undefined)
         })
     })
   }
 
-  unZipImage(image: ImageInfo, progress?: (p: number) => void): Promise<void> {
-    const sourcePath = path.join(this.reflasherConfigPath, image.file)
+  unZipImage(
+    image: ImageInfo,
+    tempPath: string,
+    progress?: (progress: {
+      percentage: number
+      averageSpeed: number
+      speed: number
+      eta: number
+      bytesWritten: number
+    }) => void
+  ): Promise<void> {
+    const sourcePath = tempPath
     const fileExtension = path.extname(sourcePath)
 
     if (fileExtension !== '.gz') {
@@ -137,25 +173,27 @@ export default class ImageManager {
     zipTransform.pipe(writeStream)
 
     let written = 0
-    let lastPercentage = 0
+    let startTime: number | null = null
 
     if (progress) {
-      progress(0)
+      progress({ averageSpeed: 0, eta: 0, percentage: 0, speed: 0, bytesWritten: 0 })
     }
 
     return new Promise((resolve, reject) => {
       readStream.on('data', (buf) => {
+        startTime = Date.now()
+
         zipTransform.write(buf, (err) => {
           if (err) {
             reject(err)
           }
           if (progress) {
             written += buf.length
-            const prog = Math.floor((written / image.size) * 100)
-            if (prog > lastPercentage) {
-              progress(prog)
-              lastPercentage = prog
-            }
+            const elapsedTime = (Date.now() - startTime!) / 1000 // Convert to seconds
+            const { speed, averageSpeed } = this.calculateSpeed(written, elapsedTime)
+            const eta = this.calculateETA(written, speed, image.size)
+            const percentage = (written / image.size) * 100
+            progress({ percentage, averageSpeed, eta, speed, bytesWritten: written })
           }
         })
       })
@@ -170,64 +208,3 @@ export default class ImageManager {
     })
   }
 }
-
-// todo: offline mode, using cached images only
-// todo: remove older images from cache
-
-// const runImagesWizard = async () => {
-//   const imageManager = new ImageManager()
-
-//   await imageManager.createReflasherDirIfNotExists()
-
-//   const boards = await imageManager.downloadSupportedBoards()
-
-//   const choices = boards.map((b) => ({
-//     name: `${b.modelname} (${b.architecture})`,
-//     value: b
-//   }))
-
-//   const answerBoard = await select({
-//     message: 'Which board do you want to flash?',
-//     choices
-//   })
-
-//   const image = answerBoard.latestImages[0]
-
-//   // todo: support iso
-//   if (image.osvariant !== 'image') {
-//     throw new Error(`Os variant ${image.osvariant} not yet supported.`)
-//   }
-
-//   const imageFileExists = await imageManager.checkIfImageFileExists(image)
-
-//   if (imageFileExists) {
-//     console.log(`Using cached Image: ${imageManager.getImagePath(image)} ...`)
-//     return imageManager.getImagePath(image)
-//   }
-
-//   const zipFileExists = await imageManager.checkIfImageZipExists(image)
-
-//   if (!zipFileExists) {
-//     console.log('Downloading Image ...')
-
-//     const flashProgressBar = new SingleBar({
-//       format: 'Download Progress |{bar}| {percentage}%'
-//     })
-
-//     flashProgressBar.start(100, 0)
-//     await imageManager.downloadImageToFile(image, (p) => flashProgressBar.update(p))
-//     flashProgressBar.stop()
-//   }
-
-//   console.log('Extracting Image ...')
-
-//   const extractProgressBar = new SingleBar({
-//     format: 'Extract  Progress |{bar}| {percentage}%'
-//   })
-
-//   extractProgressBar.start(100, 0)
-//   await imageManager.unZipImage(image, (p) => extractProgressBar.update(p))
-//   extractProgressBar.stop()
-
-//   return imageManager.getImagePath(image)
-// }

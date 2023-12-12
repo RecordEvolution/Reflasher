@@ -23,6 +23,7 @@ const api = {
   getSupportedBoards: () => ipcRenderer.invoke(RPC.GetSupportedBoards) as Promise<SupportedBoard[]>,
   scanWifi: () => ipcRenderer.invoke(RPC.ScanWifi) as Promise<WiFiNetwork[]>,
   flashDevice: (flashItem: FlashItem) => ipcRenderer.invoke(RPC.FlashDevice, flashItem),
+  cancelFlashing: (id: number) => ipcRenderer.invoke(RPC.CancelFlashing, id),
   setSudoPassword: (password: string) => ipcRenderer.invoke(RPC.SetSudoPassword, password),
   isSudoPasswordSet: () => ipcRenderer.invoke(RPC.IsSudoPasswordSet) as Promise<boolean>
 }

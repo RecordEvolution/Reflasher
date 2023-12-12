@@ -101,7 +101,7 @@ export default {
   flashing_state: {
     inactive: 'Inaktiv',
     flashing: 'Schreiben...',
-    download: 'Image herunterladen...',
+    downloading: 'Image herunterladen...',
     downloadwait: 'Warten auf Download...',
     decompressing: 'Image entpacken...',
     'extract-iso': 'Installer entpacken...',

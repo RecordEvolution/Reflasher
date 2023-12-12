@@ -101,7 +101,7 @@ export default {
   flashing_state: {
     inactive: 'Inactive',
     flashing: 'Writing...',
-    download: 'Downloading image...',
+    downloading: 'Downloading image...',
     downloadwait: 'Waiting for download...',
     decompressing: 'Extracting image...',
     'extract-iso': 'Extracting Installer...',
@@ -109,7 +109,7 @@ export default {
     verifying: 'Validating...',
     mount: 'Mounting drive...',
     unmount: 'Unmounting drive...',
-    configure: 'Configuring drive...',
+    configuring: 'Configuring drive...',
     finish: 'Finish'
   }
 }

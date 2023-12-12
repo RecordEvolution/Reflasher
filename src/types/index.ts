@@ -9,6 +9,7 @@ export enum RPC {
   GetSupportedBoards = 'get-supported-boards',
   ScanWifi = 'scan-wifi',
   FlashDevice = 'flash-device',
+  CancelFlashing = 'cancel-flashing',
   SetSudoPassword = 'set-sudo-password',
   IsSudoPasswordSet = 'isset-sudo-password'
 }
@@ -28,6 +29,8 @@ export type ImageInfo = {
 export type SupportedBoard = {
   architecture: string
   board: string
+  docs: string
+  reflasher: boolean
   boardname: string
   cpu: string
   latestImages: ImageInfo[]
@@ -41,6 +44,7 @@ export type ReswarmConfig = {
     cpu: string
     docs: string
     board: string
+    latestImages: ImageInfo[]
     model: string
     boardname: string
     modelname: string
@@ -73,14 +77,14 @@ export type FlashItem = {
   id: number
   fullPath: string
   reswarm?: {
-    configFile?: ReswarmConfig
+    config?: ReswarmConfig
     board?: SupportedBoard
     wifiPassword?: string
     wifiSSID?: string
     showPassword?: boolean
   }
   flash: {
-    state: WriteStep | 'idle' | 'failed'
+    state: WriteStep | 'idle' | 'failed' | 'downloading' | 'configuring'
     progress: number
     avgSpeed: number
     speed: number

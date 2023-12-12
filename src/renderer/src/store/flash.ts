@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { FlashItem, ReswarmConfig } from 'src/types'
+import { FlashItem, ReswarmConfig, SupportedBoard } from 'src/types'
 import { useDrivesStore } from './drives'
 import { useBoardStore } from './boards'
 import { toRaw } from 'vue'
@@ -13,6 +13,7 @@ type FlashStoreState = {
 }
 
 type FlashProgress = {
+  canceled: boolean
   position: number
   bytes: number
   speed: number
@@ -74,12 +75,12 @@ export const useFlashStore = () => {
             encoding: 'utf8'
           })) as string
 
-          const configFile = JSON.parse(configFileString) as ReswarmConfig
+          const config = JSON.parse(configFileString) as ReswarmConfig
+          const board = boardStore.boards.find((b) => b.model === config.board.model) as SupportedBoard
+          config.board = board
+
           flashItem.reswarm = {
-            configFile,
-            board: boardStore.boards.find((b) => b.model === configFile.board.model),
-            wifiPassword: configFile.password,
-            wifiSSID: configFile.wlanssid
+            config
           }
         }
 
@@ -89,6 +90,21 @@ export const useFlashStore = () => {
         await window.sudoDialog.openDialog()
 
         return window.api.flashDevice(deepToRaw(flashItem))
+      },
+      cancelFlashing(flashItem: FlashItem) {
+        return window.api.cancelFlashing(flashItem.id)
+      },
+      reset(flashItem: FlashItem) {
+        const item = this.items.find((i) => i.id === flashItem.id)
+        if (item) {
+          item.flash = {
+            progress: 0,
+            state: 'idle',
+            speed: 0,
+            avgSpeed: 0,
+            eta: 0
+          }
+        }
       },
       removeItem(flashItem: FlashItem) {
         const flashItemIndex = this.items.findIndex((fi) => fi.id === flashItem.id)
@@ -100,6 +116,18 @@ export const useFlashStore = () => {
           ({ progress, id }: { progress: FlashProgress; id: number }) => {
             const item = this.items.find((i) => i.id === id)
             if (item) {
+              if (progress.canceled) {
+                item.flash = {
+                  progress: 0,
+                  state: 'idle',
+                  speed: 0,
+                  avgSpeed: 0,
+                  eta: 0
+                }
+
+                return
+              }
+
               item.flash.state = progress.type
               item.flash.progress = progress.percentage
               item.flash.speed = progress.speed

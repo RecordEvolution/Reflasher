@@ -6,13 +6,9 @@ import { scanner } from 'etcher-sdk'
 import { readFile } from 'fs/promises'
 import { OpenMode } from 'fs'
 import { Abortable } from 'events'
-import ImageManager from './api/boards'
 import { scanNetworks } from './api/wifi'
-import { flashDevice } from './api/flash'
+import { cancelFlashing, flashDevice, imageManager } from './api/flash'
 import { isSudoPasswordSet, setSudoPassword } from './api/permissions'
-
-const imageManager = new ImageManager()
-imageManager.createReflasherDirIfNotExists()
 
 function handleListDrives() {
   return listDrives()
@@ -98,6 +94,10 @@ function handleIsSudoPasswordSet() {
   return isSudoPasswordSet()
 }
 
+function handleCancelFlashing(id: number) {
+  return cancelFlashing(id)
+}
+
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.ListDrives, handleListDrives)
   ipcMain.handle(RPC.Unmount, handleUnmount)
@@ -108,6 +108,7 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.FlashDevice, (_, flashItem) => handleFlashDevice(_, mainWindow, flashItem))
   ipcMain.handle(RPC.SetSudoPassword, (_, password) => handleSetSudoPassword(password))
   ipcMain.handle(RPC.IsSudoPasswordSet, handleIsSudoPasswordSet)
+  ipcMain.handle(RPC.CancelFlashing, (_, id) => handleCancelFlashing(id))
 
   handleDriveScanner(mainWindow)
 }

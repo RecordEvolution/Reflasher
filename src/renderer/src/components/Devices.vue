@@ -65,7 +65,7 @@ watch(drives, (updatedDl) => {
 
     <v-divider style="margin-top: 20px"></v-divider>
 
-    <v-expansion-panels value="0">
+    <v-expansion-panels>
       <v-expansion-panel v-for="flashItem in flashItems">
         <!-- -------------------- Header of Device -------------------- -->
 
@@ -78,15 +78,11 @@ watch(drives, (updatedDl) => {
                 </div>
                 <div class="textDesc deviceName">
                   {{
-                    cutInfoString(
-                      flashItem.reswarm?.configFile?.name ?? '',
-                      20,
-                      $t('no_device_name')
-                    )
+                    cutInfoString(flashItem.reswarm?.config?.name ?? '', 20, $t('no_device_name'))
                   }}
                 </div>
                 <div class="textMain">
-                  {{ cutInfoString(flashItem.reswarm?.configFile?.description ?? '', 20, '') }}
+                  {{ cutInfoString(flashItem.reswarm?.config?.description ?? '', 20, '') }}
                 </div>
               </div>
 
@@ -96,17 +92,13 @@ watch(drives, (updatedDl) => {
                 </div>
                 <div class="textDesc">
                   {{
-                    cutInfoString(
-                      flashItem.reswarm?.configFile?.swarm_name ?? '',
-                      25,
-                      $t('no_swarm')
-                    )
+                    cutInfoString(flashItem.reswarm?.config?.swarm_name ?? '', 25, $t('no_swarm'))
                   }}
                 </div>
                 <div class="textMain">
                   {{
                     cutInfoString(
-                      flashItem.reswarm?.configFile?.swarm_owner_name ?? '',
+                      flashItem.reswarm?.config?.swarm_owner_name ?? '',
                       25,
                       $t('no_swarm_owner')
                     )
@@ -156,17 +148,23 @@ watch(drives, (updatedDl) => {
                 <div class="textHead">
                   {{ $t('board') }}
                 </div>
-                <div class="textDesc" v-bind:class="{ textAlert: !flashItem.reswarm.board }">
+                <div
+                  class="textDesc"
+                  v-bind:class="{ textAlert: !flashItem.reswarm.config!.board }"
+                >
                   {{
-                    flashItem.reswarm.board
-                      ? cutInfoString(flashItem.reswarm.board.architecture, 25)
+                    flashItem.reswarm.config!.board
+                      ? cutInfoString(flashItem.reswarm.config!.board.architecture, 25)
                       : $t('board')
                   }}
                 </div>
-                <div class="textMain" v-bind:class="{ textAlert: !flashItem.reswarm.board }">
+                <div
+                  class="textMain"
+                  v-bind:class="{ textAlert: !flashItem.reswarm.config!.board }"
+                >
                   {{
-                    flashItem.reswarm.board
-                      ? cutInfoString(flashItem.reswarm.board.modelname, 25)
+                    flashItem.reswarm.config!.board
+                      ? cutInfoString(flashItem.reswarm.config!.board.modelname, 25)
                       : $t('choose_board')
                   }}
                 </div>
@@ -174,17 +172,24 @@ watch(drives, (updatedDl) => {
             </div>
 
             <div class="buttons-container">
-              <div class="editButtons">
+              <div class="editButtons" v-if="flashItem.flash.state === 'idle'">
                 <v-btn size="small" variant="outlined" height="40" color="accent" min-width="140px">
                   <v-icon> mdi-pencil </v-icon>
                   {{ $t('edit') }}
                 </v-btn>
               </div>
 
+              <div class="editButtons" v-if="flashItem.flash.state !== 'idle'">
+                <v-btn size="small" variant="outlined" height="40" color="accent" min-width="140px">
+                  <v-icon> mdi-scatter-plot </v-icon>
+                  {{ $t('details') }}
+                </v-btn>
+              </div>
+
               <div class="actionButtons">
                 <v-btn
                   style="margin-right: 16px"
-                  v-if="flashItem.reswarm"
+                  v-if="flashItem.reswarm && flashItem.flash.state === 'idle'"
                   class="testDeviceButton"
                   size="small"
                   variant="outlined"
@@ -246,7 +251,7 @@ watch(drives, (updatedDl) => {
 
             <v-select
               v-if="flashItem.reswarm && flashItem.flash.state === 'idle'"
-              v-model="flashItem.reswarm.board"
+              v-model="flashItem.reswarm.config!.board"
               :label="$t('choose_board_and_os')"
               :items="boards"
               :item-title="(el: SupportedBoard) => el.modelname"
@@ -256,7 +261,7 @@ watch(drives, (updatedDl) => {
 
             <v-combobox
               v-if="flashItem.reswarm && flashItem.flash.state === 'idle'"
-              v-model="flashItem.reswarm.wifiSSID"
+              v-model="flashItem.reswarm.config!.wlanssid"
               :label="$t('specify_wlan_or_lan')"
               item-title="ssid"
               item-value="ssid"
@@ -267,12 +272,12 @@ watch(drives, (updatedDl) => {
 
             <v-text-field
               v-if="flashItem.reswarm && flashItem.flash.state === 'idle'"
-              v-model="flashItem.reswarm.wifiPassword"
+              v-model="flashItem.reswarm.config!.password"
               :label="$t('wlan_password')"
               :append-icon="flashItem.reswarm.showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               :type="flashItem.reswarm.showPassword ? 'text' : 'password'"
               name="input-password"
-              outlined
+              variant="outlined"
               @click:append="flashItem.reswarm.showPassword = !flashItem.reswarm.showPassword"
             ></v-text-field>
           </div>
@@ -280,14 +285,24 @@ watch(drives, (updatedDl) => {
           <!-- -------------------- Body of Device (flashing active) -------------------- -->
 
           <div v-show="flashItem.flash.state !== 'idle'">
-            <FlashDisplay :id="flashItem.id"> </FlashDisplay>
+            <FlashDisplay
+              v-if="
+                flashItem.flash.state === 'decompressing' ||
+                flashItem.flash.state === 'flashing' ||
+                flashItem.flash.state === 'verifying' ||
+                flashItem.flash.state === 'downloading'
+              "
+              :id="flashItem.id"
+            >
+            </FlashDisplay>
 
             <div class="d-flex justify-center">
               <v-btn
+                v-if="flashItem.flash.state === 'flashing'"
                 small
                 color="secondary"
                 height="40"
-                :disabled="flashItem.flash.state !== 'flashing'"
+                @click.native.stop="flashStore.cancelFlashing(flashItem)"
               >
                 <v-icon left> mdi-cancel </v-icon>
                 {{ $t('cancel_writing') }}
@@ -295,29 +310,16 @@ watch(drives, (updatedDl) => {
 
               <v-spacer></v-spacer>
 
-              <!-- <v-btn
-                small
+              <v-btn
+                size="small"
                 color="secondary"
                 height="40"
-                @click="resetDevice(item)"
-                v-if="item.flash.state == 'finish' && !flashProtocol[item.serial_number].success"
+                @click="flashStore.reset(flashItem)"
+                v-if="flashItem.flash.state === 'finished' || flashItem.flash.state === 'failed'"
               >
                 <v-icon left> mdi-refresh </v-icon>
                 {{ $t('try_again') }}
-              </v-btn> -->
-
-              <v-spacer></v-spacer>
-
-              <!-- <v-btn
-                small
-                color="secondary"
-                height="40"
-                :disabled="item.flash.state != 'finish'"
-                @click="exportDevice(item)"
-              >
-                <v-icon left> mdi-export </v-icon>
-                {{ $t('export_log_report') }}
-              </v-btn> -->
+              </v-btn>
             </div>
           </div>
         </v-expansion-panel-text>

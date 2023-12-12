@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import humanizeDuration from 'humanize-duration'
 import { useFlashStore } from '@renderer/store/flash'
 import { storeToRefs } from 'pinia'
 import { use } from 'echarts/core'
@@ -23,12 +24,27 @@ const flashItem = computed(() => flashItemById.value(props.id ?? 0))
 const progressLabel = ref()
 const etaLabel = ref()
 const speedLabel = ref()
+const shortEnglishHumanizer = humanizeDuration.humanizer({
+  language: 'shortEn',
+  languages: {
+    shortEn: {
+      y: () => 'y',
+      mo: () => 'mo',
+      w: () => 'w',
+      d: () => 'd',
+      h: () => 'h',
+      m: () => 'm',
+      s: () => 's',
+      ms: () => 'ms'
+    }
+  }
+})
 
 watch(
   flashItem,
   (newVal) => {
-    progressLabel.value = newVal?.flash.progress.toFixed(2) + '%'
-    etaLabel.value = newVal?.flash.eta.toFixed(2) + 's'
+    progressLabel.value = newVal?.flash?.progress.toFixed(2) + '%'
+    etaLabel.value = shortEnglishHumanizer(Math.round(newVal?.flash.eta ?? 0) * 1000)
     speedLabel.value = prettyBytes(newVal?.flash.speed ?? 0) + '/s'
   },
   { deep: true }
