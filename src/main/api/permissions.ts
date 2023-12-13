@@ -2,6 +2,7 @@ import { spawn, exec } from 'child_process'
 import fs from 'fs/promises'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import { app } from 'electron'
 
 let sudoPassword: string
 let sudoPasswordSet: boolean
@@ -42,9 +43,8 @@ export const elevatedChildProcess = (
   onExit?: (code: number | null, signal: NodeJS.Signals | null) => void
 ) => {
   const platform = process.platform
-  if ((platform === 'darwin' || platform === 'linux')) {
-    const password = getSudoPassword()
-    return elevatedChildProcessUnix(code, password, onStdout, onStderr, onExit)
+  if (platform === 'darwin' || platform === 'linux') {
+    return elevatedChildProcessUnix(code, onStdout, onStderr, onExit)
   }
 
   return elevatedChildProcessWindows(code, onStdout, onStderr, onExit)
@@ -76,14 +76,13 @@ export const elevatedExecUnix = async (command: string, password: string): Promi
 
 const elevatedChildProcessUnix = async (
   code: string,
-  password: string,
   onStdout?: (data: string) => void,
   onStderr?: (data: string) => void,
   onExit?: (code: number | null, signal: NodeJS.Signals | null) => void
 ) => {
   const uniqueID = uuidv4()
   const fileName = uniqueID + '.js'
-  const scriptPath = path.join(__dirname, fileName)
+  const scriptPath = path.join(app.getPath('appData'), fileName)
 
   await fs.writeFile(scriptPath, code)
 
@@ -91,7 +90,7 @@ const elevatedChildProcessUnix = async (
   const args = ['-E', '-S', process.execPath, scriptPath]
   const childProcess = spawn(command, args, { env: { ELECTRON_RUN_AS_NODE: '1' } })
 
-  childProcess.stdin.write(password)
+  childProcess.stdin.write(getSudoPassword())
   childProcess.stdin.end()
 
   if (onStdout) {
@@ -114,7 +113,6 @@ const elevatedChildProcessUnix = async (
   return childProcess
 }
 
-
 const elevatedChildProcessWindows = async (
   code: string,
   onStdout?: (data: string) => void,
@@ -123,14 +121,15 @@ const elevatedChildProcessWindows = async (
 ) => {
   const uniqueID = uuidv4()
   const fileName = uniqueID + '.js'
-  const scriptPath = path.join(__dirname, fileName)
+  const scriptPath = path.join(app.getPath('appData'), fileName)
 
   await fs.writeFile(scriptPath, code)
 
-  const command = 'node'
+  const command = process.execPath
   const args = [scriptPath]
 
-  const childProcess = spawn(command, args)
+  console.log({ command, args })
+  const childProcess = spawn(command, args, { env: { ELECTRON_RUN_AS_NODE: '1' } })
 
   if (onStdout) {
     childProcess.stdout.on('data', (data) => onStdout(data.toString()))

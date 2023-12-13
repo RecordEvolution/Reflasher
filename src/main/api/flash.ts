@@ -153,7 +153,7 @@ export const flashDevice = async (flashItem: FlashItem, updateState: (data: stri
 
   updateState(JSON.stringify({ type: 'starting' }))
 
-  const childProcess = await elevatedChildProcess(scriptContent, updateState, undefined, handleOnExit)
+  const childProcess = await elevatedChildProcess(scriptContent, updateState, console.error, handleOnExit)
   activeFlashProcesses.set(flashItem.id, childProcess)
 }
 
