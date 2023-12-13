@@ -15,7 +15,7 @@ getPlatform()
 <template>
   <v-container>
     <v-list-item>
-      <v-toolbar-title class="title">
+      <v-toolbar-title>
         {{ $t('flash_drives') }}
       </v-toolbar-title>
 
@@ -109,6 +109,10 @@ getPlatform()
   </v-container>
 </template>
 <style>
+.title {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
 .drive-item {
   display: flex;
   gap: 10px;

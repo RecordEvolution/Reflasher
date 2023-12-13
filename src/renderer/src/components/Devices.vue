@@ -37,15 +37,15 @@ watch(drives, (updatedDl) => {
 <template>
   <v-container>
     <div class="header">
-      <div>
+      <v-list-item>
         <v-list-item-title class="title">
-          {{ $t('device') }}
+          {{ $t('devices') }}
         </v-list-item-title>
 
         <v-list-item-subtitle>
           {{ $t('devices_list_subtitle') }}
         </v-list-item-subtitle>
-      </div>
+      </v-list-item>
       <v-tooltip bottom>
         <template v-slot:activator="{ props }">
           <v-btn
