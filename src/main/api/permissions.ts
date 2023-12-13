@@ -88,9 +88,8 @@ const elevatedChildProcessUnix = async (
   await fs.writeFile(scriptPath, code)
 
   const command = 'sudo'
-  const args = ['-S', 'node', scriptPath]
-
-  const childProcess = spawn(command, args)
+  const args = ['-E', '-S', process.execPath, scriptPath]
+  const childProcess = spawn(command, args, { env: { ELECTRON_RUN_AS_NODE: '1' } })
 
   childProcess.stdin.write(password)
   childProcess.stdin.end()
