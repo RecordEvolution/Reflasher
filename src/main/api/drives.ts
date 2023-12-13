@@ -184,6 +184,5 @@ export async function unmountDisk(drivePath: string) {
     });
   `
 
-  const sudoPassword = getSudoPassword()
-  return elevatedChildProcess(scriptContent, sudoPassword)
+  return elevatedChildProcess(scriptContent)
 }

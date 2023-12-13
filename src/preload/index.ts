@@ -27,7 +27,8 @@ const api = {
   flashDevice: (flashItem: FlashItem) => ipcRenderer.invoke(RPC.FlashDevice, flashItem),
   cancelFlashing: (id: number) => ipcRenderer.invoke(RPC.CancelFlashing, id),
   setSudoPassword: (password: string) => ipcRenderer.invoke(RPC.SetSudoPassword, password),
-  isSudoPasswordSet: () => ipcRenderer.invoke(RPC.IsSudoPasswordSet) as Promise<boolean>
+  isSudoPasswordSet: () => ipcRenderer.invoke(RPC.IsSudoPasswordSet) as Promise<boolean>,
+  getPlatform: () => ipcRenderer.invoke(RPC.GetPlatform) as Promise<string>
 }
 
 export type Api = typeof api

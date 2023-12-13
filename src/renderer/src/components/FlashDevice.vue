@@ -60,7 +60,7 @@ const flashItem = flashItemById.value(props.id ?? 0)
       </v-progress-linear>
     </div>
 
-    <div class="flashSeg" v-if="flashItem?.flash.state == 'configuring'">
+    <div class="flashSeg" v-if="flashItem?.flash.state == 'configuring' || flashItem?.flash.state == 'starting'">
       <v-progress-linear class="flash-prog" indeterminate color="secondary" rounded height="40">
         {{ $t(`flashing_state.${flashItem?.flash.state}`) }}
       </v-progress-linear>

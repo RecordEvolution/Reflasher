@@ -101,6 +101,7 @@ export default {
   flashing_state: {
     inactive: 'Inactive',
     flashing: 'Writing...',
+    starting: 'Initializing...',
     downloading: 'Downloading image...',
     downloadwait: 'Waiting for download...',
     decompressing: 'Extracting image...',

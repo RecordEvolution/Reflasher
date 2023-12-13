@@ -1,7 +1,7 @@
 import { automountDriveLinux, waitForMount } from './drives'
 import { ChildProcessWithoutNullStreams } from 'child_process'
 import { FlashItem } from '../../types'
-import { elevatedChildProcess, getSudoPassword } from './permissions'
+import { elevatedChildProcess } from './permissions'
 import { copyFile, rename, unlink, writeFile } from 'fs/promises'
 import ImageManager from './boards'
 import path from 'path'
@@ -12,6 +12,7 @@ export const imageManager = new ImageManager()
 imageManager.createReflasherDirIfNotExists()
 
 const copyConfigFile = async (drive: Drive, reswarmConfigPath: string) => {
+  // For some reason linux doesn't automount the drive, so we have to manually do it
   if (process.platform === 'linux') {
     await automountDriveLinux(drive)
   }
@@ -27,7 +28,7 @@ const copyConfigFile = async (drive: Drive, reswarmConfigPath: string) => {
   return copyFile(reswarmConfigPath, path.join(targetPath, path.basename(reswarmConfigPath)))
 }
 
-export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string) => void) => {
+export const flashDevice = async (flashItem: FlashItem, updateState: (data: string) => void) => {
   if (!flashItem.drive || !flashItem.fullPath) throw new Error('drive not set')
 
   let imagePath = flashItem.fullPath
@@ -57,11 +58,11 @@ export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string)
 
       try {
         await imageManager.downloadImageToFile(image, zippedImageTempPath, (progress) => {
-          onStdout(JSON.stringify({ ...progress, type: 'downloading' }))
+          updateState(JSON.stringify({ ...progress, type: 'downloading' }))
         })
 
         await imageManager.unZipImage(image, zippedImageTempPath, (progress) => {
-          onStdout(JSON.stringify({ ...progress, type: 'decompressing' }))
+          updateState(JSON.stringify({ ...progress, type: 'decompressing' }))
         })
 
         await rename(realImageTempPath, realImagePath)
@@ -71,6 +72,12 @@ export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string)
         unlink(zippedImageTempPath)
       }
     }
+  }
+
+  let stringifiedDrive = JSON.stringify(flashItem.drive)
+  if (process.platform === 'win32') {
+    imagePath = imagePath.replace(/\\/g, '\\\\')
+    stringifiedDrive = stringifiedDrive.replace(/\\/g, '\\\\')
   }
 
   const scriptContent = `
@@ -85,7 +92,7 @@ export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string)
         path: "${imagePath}"
       })
     
-      const drive = JSON.parse('${JSON.stringify(flashItem.drive)}')
+      const drive = JSON.parse('${stringifiedDrive}')
       const _blockDevice = new sourceDestination.BlockDevice({
         drive,
         write: true,
@@ -117,29 +124,36 @@ export const flashDevice = async (flashItem: FlashItem, onStdout: (data: string)
     flash()
   `
 
-  const childProcess = await elevatedChildProcess(
-    scriptContent,
-    getSudoPassword(),
-    onStdout,
-    undefined,
-    async (code, signal) => {
-      activeFlashProcesses.delete(flashItem.id)
-      if (code === 0 && signal === null && flashItem.reswarm && image?.osvariant === 'image') {
+  async function handleOnExit(code: number | null, signal: NodeJS.Signals | null) {
+    activeFlashProcesses.delete(flashItem.id)
+    
+    // Copy the file over when the flashing process has exited without an error code
+    if (code === 0 && signal === null && flashItem.reswarm && image?.osvariant === 'image') {
+      try {
         await copyConfigFile(flashItem.drive!, flashItem.fullPath)
-        onStdout(
-          JSON.stringify({
-            averageSpeed: 0,
-            eta: 0,
-            percentage: 0,
-            speed: 0,
-            bytesWritten: 0,
-            type: 'finished'
-          })
-        )
-      }
-    }
-  )
+      } catch (error) {
+        if (process.platform !== 'win32') throw error
 
+        // For some reason, the first time this fails on windows, doing it again works.
+        await copyConfigFile(flashItem.drive!, flashItem.fullPath)
+      }
+
+      updateState(
+        JSON.stringify({
+          averageSpeed: 0,
+          eta: 0,
+          percentage: 0,
+          speed: 0,
+          bytesWritten: 0,
+          type: 'finished'
+        })
+      )
+    }
+  }
+
+  updateState(JSON.stringify({ type: 'starting' }))
+
+  const childProcess = await elevatedChildProcess(scriptContent, updateState, undefined, handleOnExit)
   activeFlashProcesses.set(flashItem.id, childProcess)
 }
 

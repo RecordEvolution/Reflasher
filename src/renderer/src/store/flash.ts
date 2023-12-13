@@ -114,25 +114,25 @@ export const useFlashStore = () => {
           'flash-progress',
           ({ progress, id }: { progress: FlashProgress; id: number }) => {
             const item = this.items.find((i) => i.id === id)
-            if (item) {
-              if (progress.canceled) {
-                item.flash = {
-                  progress: 0,
-                  state: 'idle',
-                  speed: 0,
-                  avgSpeed: 0,
-                  eta: 0
-                }
+            if (!item) return
 
-                return
+            if (progress.canceled) {
+              item.flash = {
+                progress: 0,
+                state: 'idle',
+                speed: 0,
+                avgSpeed: 0,
+                eta: 0
               }
 
-              item.flash.state = progress.type
-              item.flash.progress = progress.percentage
-              item.flash.speed = progress.speed
-              item.flash.eta = progress.eta
-              item.flash.avgSpeed = progress.averageSpeed
+              return
             }
+
+            item.flash.state = progress.type
+            item.flash.progress = progress.percentage ?? 0
+            item.flash.speed = progress.speed ?? 0
+            item.flash.eta = progress.eta ?? 0
+            item.flash.avgSpeed = progress.averageSpeed ?? 0
           }
         )
       }

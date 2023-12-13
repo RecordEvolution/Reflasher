@@ -24,6 +24,10 @@ function handleMount(_, drive: Drive) {
   return automountDrive(drive)
 }
 
+function handleGetPlatform() {
+  return process.platform
+}
+
 function handleDriveScanner(mainWindow: BrowserWindow) {
   const adapters: scanner.adapters.Adapter[] = [
     new scanner.adapters.BlockDeviceAdapter({
@@ -121,6 +125,7 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.SetSudoPassword, (_, password) => handleSetSudoPassword(password))
   ipcMain.handle(RPC.IsSudoPasswordSet, handleIsSudoPasswordSet)
   ipcMain.handle(RPC.CancelFlashing, (_, id) => handleCancelFlashing(id))
+  ipcMain.handle(RPC.GetPlatform, handleGetPlatform)
 
   handleDriveScanner(mainWindow)
 }

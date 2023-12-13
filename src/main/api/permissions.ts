@@ -37,17 +37,17 @@ export const getSudoPassword = () => {
 
 export const elevatedChildProcess = (
   code: string,
-  password: string,
   onStdout?: (data: string) => void,
   onStderr?: (data: string) => void,
   onExit?: (code: number | null, signal: NodeJS.Signals | null) => void
 ) => {
   const platform = process.platform
-  if (platform === 'darwin' || platform === 'linux') {
+  if ((platform === 'darwin' || platform === 'linux')) {
+    const password = getSudoPassword()
     return elevatedChildProcessUnix(code, password, onStdout, onStderr, onExit)
   }
 
-  return Promise.resolve() as any
+  return elevatedChildProcessWindows(code, onStdout, onStderr, onExit)
 }
 
 export const execAsync = async (command: string): Promise<string> => {
@@ -107,6 +107,44 @@ const elevatedChildProcessUnix = async (
 
   childProcess.on('exit', (code, signal) => {
     fs.unlink(scriptPath)
+    if (onExit) {
+      onExit(code, signal)
+    }
+  })
+
+  return childProcess
+}
+
+
+const elevatedChildProcessWindows = async (
+  code: string,
+  onStdout?: (data: string) => void,
+  onStderr?: (data: string) => void,
+  onExit?: (code: number | null, signal: NodeJS.Signals | null) => void
+) => {
+  const uniqueID = uuidv4()
+  const fileName = uniqueID + '.js'
+  const scriptPath = path.join(__dirname, fileName)
+
+  await fs.writeFile(scriptPath, code)
+
+  const command = 'node'
+  const args = [scriptPath]
+
+  const childProcess = spawn(command, args)
+
+  if (onStdout) {
+    childProcess.stdout.on('data', (data) => onStdout(data.toString()))
+  }
+
+  if (onStderr) {
+    childProcess.stderr.on('data', (data) => onStderr(data.toString()))
+  }
+
+  childProcess.on('error', (d) => console.log(d))
+
+  childProcess.on('exit', (code, signal) => {
+    // fs.unlink(scriptPath)
     if (onExit) {
       onExit(code, signal)
     }

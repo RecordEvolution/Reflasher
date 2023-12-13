@@ -17,6 +17,9 @@ async function setSudoPassword() {
 }
 
 async function openDialog() {
+  const platform = await window.api.getPlatform()
+  if (platform === 'win32') return true
+
   const isSudoPasswordSet = await window.api.isSudoPasswordSet()
   if (isSudoPasswordSet) {
     passwordSet.value = true

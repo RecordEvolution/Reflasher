@@ -13,7 +13,8 @@ export enum RPC {
   FlashDevice = 'flash-device',
   CancelFlashing = 'cancel-flashing',
   SetSudoPassword = 'set-sudo-password',
-  IsSudoPasswordSet = 'isset-sudo-password'
+  IsSudoPasswordSet = 'isset-sudo-password',
+  GetPlatform = 'get-platform'
 }
 
 export type ImageInfo = {
@@ -86,7 +87,7 @@ export type FlashItem = {
     showPassword?: boolean
   }
   flash: {
-    state: WriteStep | 'idle' | 'failed' | 'downloading' | 'configuring'
+    state: WriteStep | 'idle' | 'failed' | 'downloading' | 'configuring' | 'starting'
     progress: number
     avgSpeed: number
     speed: number
