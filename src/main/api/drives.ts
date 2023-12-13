@@ -170,11 +170,16 @@ export const waitForMount = async (description: string) => {
 }
 
 export async function unmountDisk(drivePath: string) {
+  let path = drivePath
+  if (process.platform === 'win32') {
+    path = path.replace(/\\/g, '\\\\')
+  }
+
   // Create a separate script to run the unmount operation
   const scriptContent = `
     const mountutils = require('mountutils');
 
-    mountutils.unmountDisk("${drivePath}", (err) => {
+    mountutils.unmountDisk("${path}", (err) => {
       if (err) {
         process.stderr.write(err.message);
         process.exit(1);

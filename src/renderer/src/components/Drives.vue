@@ -1,8 +1,16 @@
 <script setup lang="ts">
+import { ref} from 'vue'
 import prettyBytes from 'pretty-bytes'
 import { useDrivesStore } from '../store/drives'
 
 const store = useDrivesStore()
+const platform = ref()
+
+async function getPlatform() {
+  platform.value = await window.api.getPlatform()
+}
+
+getPlatform()
 </script>
 <template>
   <v-container>
@@ -62,7 +70,7 @@ const store = useDrivesStore()
             <v-list-item-subtitle>{{ prettyBytes(item.size ?? 0) }}</v-list-item-subtitle>
           </div>
 
-          <div class="drive-actions">
+          <div class="drive-actions" v-if="platform !== 'win32'">
             <v-tooltip location="bottom" v-if="!item.mountpoints.length">
               <template v-slot:activator="{ props }">
                 <v-btn
