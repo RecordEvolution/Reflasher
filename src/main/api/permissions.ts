@@ -82,7 +82,7 @@ const elevatedChildProcessUnix = async (
 ) => {
   const uniqueID = uuidv4()
   const fileName = uniqueID + '.js'
-  const scriptPath = path.join(app.getPath('appData'), fileName)
+  const scriptPath = path.join(__dirname, fileName)
 
   await fs.writeFile(scriptPath, code)
 
@@ -121,7 +121,7 @@ const elevatedChildProcessWindows = async (
 ) => {
   const uniqueID = uuidv4()
   const fileName = uniqueID + '.js'
-  const scriptPath = path.join(app.getPath('appData'), fileName)
+  const scriptPath = path.join(__dirname, fileName)
 
   await fs.writeFile(scriptPath, code)
 

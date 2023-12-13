@@ -1,9 +1,19 @@
 import { app, shell, BrowserWindow } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { setupIpcHandlers } from './ipcHandlers'
 import installExtension from 'electron-devtools-installer'
+
+const paths = [
+  path.join(process.resourcesPath, 'app.asar', 'node_modules'),
+  path.join(process.resourcesPath, 'app', 'node_modules'), //when asar is disabled
+  process.resourcesPath.replace(/electron[\\/]dist[\\/]resources/g, '')
+]
+
+paths.forEach((path) => {
+  global.require.main?.paths.push(path)
+})
 
 function createWindow() {
   // Create the browser window.
