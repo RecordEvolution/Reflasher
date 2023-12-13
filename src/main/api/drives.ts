@@ -101,6 +101,8 @@ export const automountDrive = (drive: Drive) => {
     case 'win32': {
       return
     }
+    default:
+      throw new Error('invalid process')
   }
 }
 
@@ -125,6 +127,8 @@ export const listPartitions = async (drive: Drive, password?: string) => {
     case 'win32': {
       return
     }
+    default:
+      throw new Error('invalid process')
   }
 }
 

@@ -44,7 +44,7 @@ if (process.contextIsolated) {
         ipcRenderer.send(channel, data)
       },
       receive: (channel, func) => {
-        ipcRenderer.on(channel, (event, ...args) => func(...args))
+        ipcRenderer.on(channel, (_, ...args) => func(...args))
       }
     })
   } catch (error) {

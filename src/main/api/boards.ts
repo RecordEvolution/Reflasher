@@ -1,6 +1,6 @@
-import { homedir, tmpdir } from 'node:os'
+import { homedir } from 'node:os'
 import { createGunzip } from 'node:zlib'
-import { access, mkdir, readFile, rename } from 'node:fs/promises'
+import { access, mkdir, readFile } from 'node:fs/promises'
 import { createWriteStream, createReadStream } from 'node:fs'
 import https from 'node:https'
 import path from 'node:path'

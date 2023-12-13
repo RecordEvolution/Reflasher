@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { FlashItem, ReswarmConfig, SupportedBoard } from 'src/types'
 import { useDrivesStore } from './drives'
 import { useBoardStore } from './boards'
-import { toRaw } from 'vue'
 import { deepToRaw } from '@renderer/utils'
 import { WriteStep } from 'etcher-sdk/build/multi-write'
 
