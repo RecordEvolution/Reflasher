@@ -39,6 +39,7 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
+electronVersion: 19.1.9 # Version
 publish:
   provider: generic
   url: https://example.com/auto-updates

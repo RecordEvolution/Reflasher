@@ -6,6 +6,7 @@ import { copyFile, rename, unlink, writeFile } from 'fs/promises'
 import ImageManager from './boards'
 import path from 'path'
 import { Drive } from 'drivelist'
+import { is } from '@electron-toolkit/utils'
 
 const activeFlashProcesses = new Map<number, ChildProcessWithoutNullStreams>()
 export const imageManager = new ImageManager()
@@ -80,8 +81,9 @@ export const flashDevice = async (flashItem: FlashItem, updateState: (data: stri
     stringifiedDrive = stringifiedDrive.replace(/\\/g, '\\\\')
   }
 
+  const etcherSDKRequire = is.dev ? 'etcher-sdk' : './app.asar/node_modules/etcher-sdk'
   const scriptContent = `
-    const { sourceDestination, multiWrite } = require('etcher-sdk')
+    const { sourceDestination, multiWrite } = require('${etcherSDKRequire}')
     process.on('SIGTERM', () => {
       process.stdout.write('{"canceled":true}')
       process.exit(0)
@@ -126,7 +128,7 @@ export const flashDevice = async (flashItem: FlashItem, updateState: (data: stri
 
   async function handleOnExit(code: number | null, signal: NodeJS.Signals | null) {
     activeFlashProcesses.delete(flashItem.id)
-    
+
     // Copy the file over when the flashing process has exited without an error code
     if (code === 0 && signal === null && flashItem.reswarm && image?.osvariant === 'image') {
       try {
@@ -153,7 +155,12 @@ export const flashDevice = async (flashItem: FlashItem, updateState: (data: stri
 
   updateState(JSON.stringify({ type: 'starting' }))
 
-  const childProcess = await elevatedChildProcess(scriptContent, updateState, console.error, handleOnExit)
+  const childProcess = await elevatedChildProcess(
+    scriptContent,
+    updateState,
+    console.error,
+    handleOnExit
+  )
   activeFlashProcesses.set(flashItem.id, childProcess)
 }
 

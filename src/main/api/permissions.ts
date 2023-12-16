@@ -2,7 +2,6 @@ import { spawn, exec } from 'child_process'
 import fs from 'fs/promises'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { app } from 'electron'
 
 let sudoPassword: string
 let sudoPasswordSet: boolean
@@ -82,7 +81,7 @@ const elevatedChildProcessUnix = async (
 ) => {
   const uniqueID = uuidv4()
   const fileName = uniqueID + '.js'
-  const scriptPath = path.join(__dirname, fileName)
+  const scriptPath = path.join(process.resourcesPath, fileName)
 
   await fs.writeFile(scriptPath, code)
 
@@ -121,7 +120,7 @@ const elevatedChildProcessWindows = async (
 ) => {
   const uniqueID = uuidv4()
   const fileName = uniqueID + '.js'
-  const scriptPath = path.join(__dirname, fileName)
+  const scriptPath = path.join(process.resourcesPath, fileName)
 
   await fs.writeFile(scriptPath, code)
 

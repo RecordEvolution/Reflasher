@@ -1,19 +1,9 @@
 import { app, shell, BrowserWindow } from 'electron'
-import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
 import { setupIpcHandlers } from './ipcHandlers'
 import installExtension from 'electron-devtools-installer'
-
-const paths = [
-  path.join(process.resourcesPath, 'app.asar', 'node_modules'),
-  path.join(process.resourcesPath, 'app', 'node_modules'), //when asar is disabled
-  process.resourcesPath.replace(/electron[\\/]dist[\\/]resources/g, '')
-]
-
-paths.forEach((path) => {
-  global.require.main?.paths.push(path)
-})
+import icon from '../../resources/icon.png?asset'
+import { join } from 'path'
 
 function createWindow() {
   // Create the browser window.
@@ -60,11 +50,13 @@ app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  await installExtension('nhdogjmejiglipccpnnnanhbledajbpd', {
-    loadExtensionOptions: {
-      allowFileAccess: true
-    }
-  })
+  if (is.dev) {
+    await installExtension('nhdogjmejiglipccpnnnanhbledajbpd', {
+      loadExtensionOptions: {
+        allowFileAccess: true
+      }
+    })
+  }
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

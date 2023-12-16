@@ -1,5 +1,6 @@
 import { Drive, list as listdrives } from 'drivelist'
 import { elevatedChildProcess, elevatedExecUnix, execAsync, getSudoPassword } from './permissions'
+import { is } from '@electron-toolkit/utils'
 
 export async function listDrives() {
   const drives = await listdrives()
@@ -175,9 +176,9 @@ export async function unmountDisk(drivePath: string) {
     path = path.replace(/\\/g, '\\\\')
   }
 
-  // Create a separate script to run the unmount operation
+  const mountutilsRequire = is.dev ? 'mountutils' : './app.asar/node_modules/mountutils'
   const scriptContent = `
-    const mountutils = require('mountutils');
+    const mountutils = require('${mountutilsRequire}');
 
     mountutils.unmountDisk("${path}", (err) => {
       if (err) {
