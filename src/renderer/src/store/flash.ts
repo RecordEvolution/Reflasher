@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { FlashItem, ReswarmConfig, SupportedBoard } from 'src/types'
+import { FlashItem, FlashProgress, ReswarmConfig, SupportedBoard } from 'src/types'
 import { useDrivesStore } from './drives'
 import { useBoardStore } from './boards'
 import { deepToRaw } from '@renderer/utils'
@@ -9,22 +9,6 @@ type FlashStoreState = {
   items: FlashItem[]
   key: number
   initialized: boolean
-}
-
-type FlashProgress = {
-  canceled: boolean
-  position: number
-  bytes: number
-  speed: number
-  averageSpeed: number
-  active: number
-  failed: number
-  type: WriteStep | 'idle'
-  sparse: boolean
-  size: number
-  bytesWritten: number
-  percentage: number
-  eta: number
 }
 
 export const useFlashStore = () => {

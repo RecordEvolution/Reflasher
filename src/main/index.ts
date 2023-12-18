@@ -4,6 +4,7 @@ import { setupIpcHandlers } from './ipcHandlers'
 import installExtension from 'electron-devtools-installer'
 import icon from '../../resources/icon.png?asset'
 import { join } from 'path'
+import { resolveBinaryPath } from './api/iso'
 
 function createWindow() {
   // Create the browser window.

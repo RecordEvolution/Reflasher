@@ -17,7 +17,7 @@ function handleListDrives() {
 
 function handleUnmount(_, drivePath: string) {
   unmountDisk(drivePath)
-  return 
+  return
 }
 
 function handleMount(_, drive: Drive) {
@@ -91,8 +91,8 @@ function handleWifiScan() {
 }
 
 function handleFlashDevice(_, mainWindow: BrowserWindow, flashItem: FlashItem) {
-  return flashDevice(flashItem, (data) => {
-    mainWindow.webContents.send('flash-progress', { progress: JSON.parse(data), id: flashItem.id })
+  return flashDevice(flashItem, (progress) => {
+    mainWindow.webContents.send('flash-progress', { progress, id: flashItem.id })
   })
 }
 

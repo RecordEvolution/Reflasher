@@ -76,6 +76,32 @@ export type ReswarmConfig = {
   owner_account_key: number
 }
 
+export type FlashState =
+  | WriteStep
+  | 'idle'
+  | 'failed'
+  | 'downloading'
+  | 'configuring'
+  | 'starting'
+  | 'extracting-iso'
+  | 'recreating-iso'
+
+export type FlashProgress = {
+  canceled: boolean
+  position: number
+  bytes: number
+  speed: number
+  averageSpeed: number
+  active: number
+  failed: number
+  type: FlashState
+  sparse: boolean
+  size: number
+  bytesWritten: number
+  percentage: number
+  eta: number
+}
+
 export type FlashItem = {
   id: number
   fullPath: string
@@ -87,7 +113,7 @@ export type FlashItem = {
     showPassword?: boolean
   }
   flash: {
-    state: WriteStep | 'idle' | 'failed' | 'downloading' | 'configuring' | 'starting'
+    state: FlashState
     progress: number
     avgSpeed: number
     speed: number

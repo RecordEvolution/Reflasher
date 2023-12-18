@@ -1,5 +1,5 @@
 import { Drive, list as listdrives } from 'drivelist'
-import { elevatedChildProcess, elevatedExecUnix, execAsync, getSudoPassword } from './permissions'
+import { elevatedNodeChildProcess, elevatedExecUnix, execAsync, getSudoPassword } from './permissions'
 import { is } from '@electron-toolkit/utils'
 
 export async function listDrives() {
@@ -190,5 +190,5 @@ export async function unmountDisk(drivePath: string) {
     });
   `
 
-  return elevatedChildProcess(scriptContent)
+  return elevatedNodeChildProcess(scriptContent)
 }

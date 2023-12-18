@@ -1,12 +1,19 @@
 import { automountDriveLinux, waitForMount } from './drives'
 import { ChildProcessWithoutNullStreams } from 'child_process'
-import { FlashItem } from '../../types'
-import { elevatedChildProcess } from './permissions'
+import { FlashItem, FlashProgress } from '../../types'
+import { elevatedNodeChildProcess } from './permissions'
 import { copyFile, rename, unlink, writeFile } from 'fs/promises'
 import ImageManager from './boards'
 import path from 'path'
 import { Drive } from 'drivelist'
 import { is } from '@electron-toolkit/utils'
+import {
+  cleanupISOContents,
+  extractISO,
+  rebuildISOFromContents,
+  unmountISO,
+  writeFileISOContents
+} from './iso'
 
 const activeFlashProcesses = new Map<number, ChildProcessWithoutNullStreams>()
 export const imageManager = new ImageManager()
@@ -29,50 +36,84 @@ const copyConfigFile = async (drive: Drive, reswarmConfigPath: string) => {
   return copyFile(reswarmConfigPath, path.join(targetPath, path.basename(reswarmConfigPath)))
 }
 
-export const flashDevice = async (flashItem: FlashItem, updateState: (data: string) => void) => {
+const getReswarmImage = async (
+  flashItem: FlashItem,
+  updateState: (data: Partial<FlashProgress>) => void
+): Promise<string> => {
+  const image = flashItem.reswarm?.config?.board.latestImages[0]
+  let imagePath = flashItem.fullPath
+
+  // Update .reswarm file (for WiFi information, etc.)
+  await writeFile(flashItem.fullPath, JSON.stringify(flashItem.reswarm!.config))
+
+  if (!image) throw new Error('latest image is empty')
+
+  const imageFileExists = await imageManager.checkIfImageFileExists(image)
+  if (imageFileExists) {
+    imagePath = imageManager.getImagePath(image)
+  } else {
+    const zippedImageTempPath = path.join(imageManager.reflasherConfigPath, 'temp-' + image.file)
+    const realImageTempPath = path.join(
+      imageManager.reflasherConfigPath,
+      'temp-' + image.file.slice(0, -3)
+    )
+
+    const realImagePath = path.join(imageManager.reflasherConfigPath, image.file.slice(0, -3))
+
+    try {
+      await imageManager.downloadImageToFile(image, zippedImageTempPath, (progress) => {
+        updateState({ ...progress, type: 'downloading' })
+      })
+
+      await imageManager.unZipImage(image, zippedImageTempPath, (progress) => {
+        updateState({ ...progress, type: 'decompressing' })
+      })
+
+      await rename(realImageTempPath, realImagePath)
+
+      imagePath = imageManager.getImagePath(image)
+    } finally {
+      unlink(zippedImageTempPath)
+    }
+  }
+
+  if (image?.osvariant !== 'image') {
+    const config = flashItem.reswarm!.config!
+    const deviceId = flashItem.reswarm!.config?.serial_number!
+
+    // cleanup old ISO contents
+    await cleanupISOContents(deviceId)
+
+    const devicePath = await extractISO(imagePath, deviceId, (percentage) => {
+      updateState({ percentage, type: 'extracting-iso' })
+    })
+
+    await writeFileISOContents(`boot/${config.name}.reswarm`, JSON.stringify(config), deviceId)
+
+    const recreatedImagePath = await rebuildISOFromContents(imagePath, deviceId, (percentage) => {
+      updateState({ percentage, type: 'recreating-iso' })
+    })
+
+    // cleanup ISO but don't wait
+    unmountISO(deviceId, devicePath)
+
+    return recreatedImagePath
+  }
+
+  return imagePath
+}
+
+export const flashDevice = async (
+  flashItem: FlashItem,
+  updateState: (data: Partial<FlashProgress>) => void
+) => {
   if (!flashItem.drive || !flashItem.fullPath) throw new Error('drive not set')
 
   let imagePath = flashItem.fullPath
   const image = flashItem.reswarm?.config?.board.latestImages[0]
 
   if (flashItem.reswarm) {
-    // Update .reswarm file (for WiFi information, etc.)
-    await writeFile(flashItem.fullPath, JSON.stringify(flashItem.reswarm.config))
-
-    if (!image) throw new Error('latest image is empty')
-
-    if (image.osvariant !== 'image') {
-      throw new Error(`Os variant ${image.osvariant} not yet supported.`)
-    }
-
-    const imageFileExists = await imageManager.checkIfImageFileExists(image)
-    if (imageFileExists) {
-      imagePath = imageManager.getImagePath(image)
-    } else {
-      const zippedImageTempPath = path.join(imageManager.reflasherConfigPath, 'temp-' + image.file)
-      const realImageTempPath = path.join(
-        imageManager.reflasherConfigPath,
-        'temp-' + image.file.slice(0, -3)
-      )
-
-      const realImagePath = path.join(imageManager.reflasherConfigPath, image.file.slice(0, -3))
-
-      try {
-        await imageManager.downloadImageToFile(image, zippedImageTempPath, (progress) => {
-          updateState(JSON.stringify({ ...progress, type: 'downloading' }))
-        })
-
-        await imageManager.unZipImage(image, zippedImageTempPath, (progress) => {
-          updateState(JSON.stringify({ ...progress, type: 'decompressing' }))
-        })
-
-        await rename(realImageTempPath, realImagePath)
-
-        imagePath = imageManager.getImagePath(image)
-      } catch (error) {
-        unlink(zippedImageTempPath)
-      }
-    }
+    imagePath = await getReswarmImage(flashItem, updateState)
   }
 
   let stringifiedDrive = JSON.stringify(flashItem.drive)
@@ -130,37 +171,37 @@ export const flashDevice = async (flashItem: FlashItem, updateState: (data: stri
     activeFlashProcesses.delete(flashItem.id)
 
     // Copy the file over when the flashing process has exited without an error code
-    if (code === 0 && signal === null && flashItem.reswarm && image?.osvariant === 'image') {
-      try {
-        await copyConfigFile(flashItem.drive!, flashItem.fullPath)
-      } catch (error) {
-        if (process.platform !== 'win32') throw error
+    if (code === 0 && signal === null && flashItem.reswarm) {
+      if (image?.osvariant === 'image') {
+        try {
+          await copyConfigFile(flashItem.drive!, flashItem.fullPath)
+        } catch (error) {
+          if (process.platform !== 'win32') throw error
 
-        // For some reason, the first time this fails on windows, doing it again works.
-        await copyConfigFile(flashItem.drive!, flashItem.fullPath)
+          // For some reason, the first time this fails on windows, doing it again works.
+          await copyConfigFile(flashItem.drive!, flashItem.fullPath)
+        }
       }
 
-      updateState(
-        JSON.stringify({
-          averageSpeed: 0,
-          eta: 0,
-          percentage: 0,
-          speed: 0,
-          bytesWritten: 0,
-          type: 'finished'
-        })
-      )
+      updateState({ type: 'finished' })
     }
   }
 
-  updateState(JSON.stringify({ type: 'starting' }))
+  updateState({ type: 'starting' })
 
-  const childProcess = await elevatedChildProcess(
+  const childProcess = await elevatedNodeChildProcess(
     scriptContent,
-    updateState,
+    (data) => {
+      try {
+        updateState(JSON.parse(data))
+      } catch (error) {
+        updateState({ type: 'failed' })
+      }
+    },
     console.error,
     handleOnExit
   )
+
   activeFlashProcesses.set(flashItem.id, childProcess)
 }
 
