@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Agent from './Agent.vue'
 import type { SupportedBoard } from 'src/types'
 import { storeToRefs } from 'pinia'
 import { useDrivesStore } from '@renderer/store/drives'
@@ -12,11 +13,6 @@ import { useAgentStore } from '@renderer/store/agent'
 import FlashDevice from '@renderer/components/FlashDevice.vue'
 import FlashDisplay from '@renderer/components/FlashDisplay.vue'
 import prettyBytes from 'pretty-bytes'
-import { ref } from 'vue'
-import { nextTick } from 'vue'
-
-const terminal = ref()
-const agentStopButton = ref()
 
 const drivesStore = useDrivesStore()
 const boardStore = useBoardStore()
@@ -24,7 +20,6 @@ const wifiStore = useWifiStore()
 const flashStore = useFlashStore()
 const agentStore = useAgentStore()
 
-const { logs, active } = storeToRefs(agentStore)
 const { drives } = storeToRefs(drivesStore)
 const { boards } = storeToRefs(boardStore)
 const { accessPoints } = storeToRefs(wifiStore)
@@ -38,14 +33,6 @@ watch(drives, (updatedDl) => {
       fi.drive = driveInList
     } else {
       fi.drive = updatedDl?.[0]
-    }
-  })
-})
-
-watch(logs, () => {
-  nextTick(() => {
-    if (terminal.value?.$el) {
-      terminal.value.$el.lastElementChild.scrollIntoView()
     }
   })
 })
@@ -341,34 +328,11 @@ watch(logs, () => {
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
-
-    <v-dialog persistent v-model="active">
-      <v-card min-height="180px">
-        <v-toolbar color="primary" class="d-flex justify-left">
-          <v-card-text class="headline white--text">
-            {{ $t('Testing device') }}
-          </v-card-text>
-        </v-toolbar>
-
-        <v-card-text>
-          <v-container class="terminal" ref="terminal" pt-4>
-            <div v-html="item" v-for="(item, index) in logs" :key="index"></div>
-          </v-container>
-        </v-card-text>
-
-        <v-card-actions class="justify-end">
-          <v-btn ref="agentStopButton" @click="agentStore.stopDevice()" variant="text">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
+
+  <Agent />
 </template>
 <style>
-.terminal {
-  font-family: 'Courier New', Courier, 'Lucida Sans Typewriter', 'Lucida Typewriter', monospace;
-  font-size: 13px;
-}
-
 .v-expansion-panels {
   padding: 2px !important;
 }
@@ -515,4 +479,3 @@ watch(logs, () => {
   pointer-events: none;
 }
 </style>
-../../../utils../../../utils

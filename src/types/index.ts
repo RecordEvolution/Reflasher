@@ -16,7 +16,8 @@ export enum RPC {
   IsSudoPasswordSet = 'isset-sudo-password',
   GetPlatform = 'get-platform',
   TestDevice = 'test-device',
-  StopDevice = 'stop-device'
+  StopDevice = 'stop-device',
+  HasDocker = 'has-docker'
 }
 
 export type ImageInfo = {

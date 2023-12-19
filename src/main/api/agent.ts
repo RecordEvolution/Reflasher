@@ -10,8 +10,19 @@ import fetch from 'node-fetch'
 
 type AgentState = 'active' | 'inactive' | 'failed'
 
+export const hasDocker = async () => {
+  try {
+    await Promise.all([execAsync('docker --version'), execAsync('docker ps')])
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
 class AgentManager extends EventEmitter {
   private logs: string[] = []
+  private dockerInitialized = false
+  private activeItem: FlashItem | null = null
   private state: AgentState = 'inactive'
   private downloadPromise: Promise<void> | null = null
   private agentProcess: ChildProcessWithoutNullStreams | null = null
@@ -96,6 +107,9 @@ class AgentManager extends EventEmitter {
   }
 
   async startAgent(flashItem: FlashItem) {
+    const isDockerInitialized = await hasDocker()
+    if (!isDockerInitialized) throw new Error('docker is not initialized!')
+
     if (this.agentProcess) throw new Error('an existing agent process is already running!')
 
     const logFilePath = path.join(this.agentDir, 'reagent.log')
@@ -120,7 +134,9 @@ class AgentManager extends EventEmitter {
     ]
 
     this.state = 'active'
-    this.emit('state', this.state)
+    this.activeItem = flashItem
+
+    this.emit('state', { state: this.state, activeItem: this.activeItem })
 
     this.agentProcess = childProcess(
       this.agentPath,
@@ -139,6 +155,7 @@ class AgentManager extends EventEmitter {
 
     this.agentProcess.on('exit', (code) => {
       this.agentProcess = null
+      this.activeItem = null
 
       if (code && code < 0) {
         this.state = 'failed'
@@ -146,7 +163,7 @@ class AgentManager extends EventEmitter {
         this.state = 'inactive'
       }
 
-      this.emit('state', this.state)
+      this.emit('state', { state: this.state, activeItem: this.activeItem })
     })
   }
 

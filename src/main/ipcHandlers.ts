@@ -7,9 +7,9 @@ import { OpenMode } from 'fs'
 import { Abortable } from 'events'
 import { scanNetworks } from './api/wifi'
 import { cancelFlashing, flashDevice, imageManager } from './api/flash'
-import { isSudoPasswordSet, setSudoPassword } from './api/permissions'
+import { execAsync, isSudoPasswordSet, setSudoPassword } from './api/permissions'
 import { Drive } from 'drivelist'
-import { agentManager } from './api/agent'
+import { agentManager, hasDocker } from './api/agent'
 
 function handleListDrives() {
   return listDrives()
@@ -101,8 +101,8 @@ function handleAgentEvents(mainWindow: BrowserWindow) {
     mainWindow.webContents.send('agent-logs', { logs })
   })
 
-  agentManager.on('state', (state) => {
-    mainWindow.webContents.send('agent-state', { state })
+  agentManager.on('state', ({ activeItem, state }) => {
+    mainWindow.webContents.send('agent-state', { activeItem, state })
   })
 }
 
@@ -112,6 +112,10 @@ function handleTestDevice(flashItem: FlashItem) {
 
 function handleStopDevice() {
   agentManager.stopAgent()
+}
+
+async function handleHasDocker() {
+  return hasDocker()
 }
 
 function handleSetSudoPassword(password: string) {
@@ -146,6 +150,7 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.GetPlatform, handleGetPlatform)
   ipcMain.handle(RPC.TestDevice, (_, flashItem) => handleTestDevice(flashItem))
   ipcMain.handle(RPC.StopDevice, handleStopDevice)
+  ipcMain.handle(RPC.HasDocker, handleHasDocker)
 
   handleDriveScanner(mainWindow)
   handleAgentEvents(mainWindow)

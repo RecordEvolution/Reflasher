@@ -16,6 +16,7 @@ import '@mdi/font/css/materialdesignicons.css'
 const i18n = createI18n({
   legacy: false, // Vuetify does not support the legacy mode of vue-i18n
   locale: 'en',
+  globalInjection: true,
   fallbackLocale: 'de',
   messages: {
     en,

@@ -5,22 +5,44 @@ import { deepToRaw } from '@renderer/utils'
 
 type AgentStoreState = {
   items: string[]
+  flashItem: FlashItem | null
   agentState: string
+  dockerInitialized: boolean
+  _dockerInfoDialog: boolean
   initialized: boolean
 }
 const ansi_converter = new Convert({ stream: true, bg: '#fff', fg: '#000' })
 
 export const useAgentStore = () => {
   const store = defineStore('agent', {
-    state: (): AgentStoreState => ({ items: [], initialized: false, agentState: '' }),
+    state: (): AgentStoreState => ({
+      items: [],
+      initialized: false,
+      dockerInitialized: false,
+      _dockerInfoDialog: false,
+      agentState: '',
+      flashItem: null
+    }),
     getters: {
       logs: (state) => state.items,
+      hasDocker: (state) => state.dockerInitialized,
+      dockerInfoDialog: (state) => state._dockerInfoDialog,
+      activeItem: (state) => state.flashItem,
       active: (state) => state.agentState === 'active',
       state: (state) => state.agentState
     },
     actions: {
+      async setDockerInfoDialog(value: boolean) {
+        this._dockerInfoDialog = value
+      },
       async testDevice(flashItem: FlashItem) {
-        return window.api.testDevice(deepToRaw(flashItem))
+        const hasDocker = await window.api.hasDocker()
+        this.dockerInitialized = hasDocker
+        this._dockerInfoDialog = !hasDocker
+
+        if (hasDocker) {
+          window.api.testDevice(deepToRaw(flashItem))
+        }
       },
       async stopDevice() {
         return window.api.stopDevice()
@@ -34,8 +56,9 @@ export const useAgentStore = () => {
           })
         })
 
-        window.ipcRenderer.receive('agent-state', ({ state }) => {
+        window.ipcRenderer.receive('agent-state', ({ state, activeItem }) => {
           this.agentState = state
+          this.flashItem = activeItem
         })
 
         this.initialized = true

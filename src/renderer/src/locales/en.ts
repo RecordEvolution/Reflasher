@@ -81,7 +81,7 @@ export default {
   agent_update_available:
     'An update is available for the REagent! Continue by downloading the update.',
   docker_is_required:
-    '<strong>Docker is required</strong>, in order to test your Reswarm Device locally.',
+    '<strong>Docker is required</strong>, in order to test your Record Evolution Device.',
   make_sure_docker_is_running:
     'If you have already installed Docker, make sure the <strong>Docker daemon</strong> is running in the background.',
   docker_please_follow_instructions:
@@ -94,6 +94,9 @@ export default {
   using_old_hardware: 'Are you using old hardware?',
   check_speed_drive: 'Verify the specified speed of your flash drive',
   check_documentation: 'Check the documentation',
+  agent: {
+    currently_running: 'Currently running: {name}'
+  },
   update: {
     announce: 'New Reflasher release available',
     download: 'Downloading Reflasher release',
