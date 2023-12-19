@@ -1,5 +1,5 @@
 import { Drive, list as listdrives } from 'drivelist'
-import { elevatedNodeChildProcess, elevatedExecUnix, execAsync, getSudoPassword } from './permissions'
+import { elevatedNodeChildProcess, elevatedExecUnix, execAsync } from './permissions'
 import { is } from '@electron-toolkit/utils'
 
 export async function listDrives() {
@@ -108,13 +108,13 @@ export const automountDrive = (drive: Drive) => {
 }
 
 export const listPartitionsDarwin = async (drive: Drive) => {
-  const output = await execAsync(`diskutil list ${drive.device}`)
-  return parseDarwinPartitionOutput(output)
+  const { stdout } = await execAsync(`diskutil list ${drive.device}`)
+  return parseDarwinPartitionOutput(stdout)
 }
 
-export const listPartitionsLinux = async (drive: Drive, password: string) => {
-  const fdiskOutput = await elevatedExecUnix(`fdisk -l ${drive.device}`, password)
-  return parseUnixPartitionOutput(fdiskOutput)
+export const listPartitionsLinux = async (drive: Drive) => {
+  const { stdout } = await elevatedExecUnix(`fdisk -l ${drive.device}`)
+  return parseUnixPartitionOutput(stdout)
 }
 
 export const listPartitions = async (drive: Drive, password?: string) => {
@@ -123,7 +123,7 @@ export const listPartitions = async (drive: Drive, password?: string) => {
       return listPartitionsDarwin(drive)
     }
     case 'linux': {
-      return listPartitionsLinux(drive, password!)
+      return listPartitionsLinux(drive)
     }
     case 'win32': {
       return
@@ -145,7 +145,7 @@ export const automountDriveDarwin = async (drive: Drive) => {
 }
 
 export const automountDriveLinux = async (drive: Drive) => {
-  const partitions = await listPartitionsLinux(drive, getSudoPassword())
+  const partitions = await listPartitionsLinux(drive)
   await execAsync('udevadm settle')
 
   for (const partition of partitions) {

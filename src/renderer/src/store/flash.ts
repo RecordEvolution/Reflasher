@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia'
-import { FlashItem, FlashProgress, ReswarmConfig, SupportedBoard } from 'src/types'
+import { FlashItem, Progress, ReswarmConfig, SupportedBoard } from 'src/types'
 import { useDrivesStore } from './drives'
 import { useBoardStore } from './boards'
 import { deepToRaw } from '@renderer/utils'
-import { WriteStep } from 'etcher-sdk/build/multi-write'
 
 type FlashStoreState = {
   items: FlashItem[]
@@ -59,10 +58,13 @@ export const useFlashStore = () => {
           })) as string
 
           const config = JSON.parse(configFileString) as ReswarmConfig
-          const board = boardStore.boards.find((b) => b.model === config.board.model) as SupportedBoard
+          const board = boardStore.boards.find(
+            (b) => b.model === config.board.model
+          ) as SupportedBoard
           config.board = board
 
           flashItem.reswarm = {
+            configPath: fullPath,
             config
           }
         }
@@ -96,7 +98,7 @@ export const useFlashStore = () => {
       initialize() {
         window.ipcRenderer.receive(
           'flash-progress',
-          ({ progress, id }: { progress: FlashProgress; id: number }) => {
+          ({ progress, id }: { progress: Progress; id: number }) => {
             const item = this.items.find((i) => i.id === id)
             if (!item) return
 

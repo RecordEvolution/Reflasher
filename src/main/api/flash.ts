@@ -1,9 +1,9 @@
 import { automountDriveLinux, waitForMount } from './drives'
 import { ChildProcessWithoutNullStreams } from 'child_process'
-import { FlashItem, FlashProgress } from '../../types'
+import { FlashItem, Progress } from '../../types'
 import { elevatedNodeChildProcess } from './permissions'
 import { copyFile, rename, unlink, writeFile } from 'fs/promises'
-import ImageManager from './boards'
+import ImageManager, { REFLASHER_CONFIG_PATH } from './boards'
 import path from 'path'
 import { Drive } from 'drivelist'
 import { is } from '@electron-toolkit/utils'
@@ -38,7 +38,7 @@ const copyConfigFile = async (drive: Drive, reswarmConfigPath: string) => {
 
 const getReswarmImage = async (
   flashItem: FlashItem,
-  updateState: (data: Partial<FlashProgress>) => void
+  updateState: (data: Partial<Progress>) => void
 ): Promise<string> => {
   const image = flashItem.reswarm?.config?.board.latestImages[0]
   let imagePath = flashItem.fullPath
@@ -52,13 +52,13 @@ const getReswarmImage = async (
   if (imageFileExists) {
     imagePath = imageManager.getImagePath(image)
   } else {
-    const zippedImageTempPath = path.join(imageManager.reflasherConfigPath, 'temp-' + image.file)
+    const zippedImageTempPath = path.join(REFLASHER_CONFIG_PATH, 'temp-' + image.file)
     const realImageTempPath = path.join(
-      imageManager.reflasherConfigPath,
+      REFLASHER_CONFIG_PATH,
       'temp-' + image.file.slice(0, -3)
     )
 
-    const realImagePath = path.join(imageManager.reflasherConfigPath, image.file.slice(0, -3))
+    const realImagePath = path.join(REFLASHER_CONFIG_PATH, image.file.slice(0, -3))
 
     try {
       await imageManager.downloadImageToFile(image, zippedImageTempPath, (progress) => {
@@ -105,7 +105,7 @@ const getReswarmImage = async (
 
 export const flashDevice = async (
   flashItem: FlashItem,
-  updateState: (data: Partial<FlashProgress>) => void
+  updateState: (data: Partial<Progress>) => void
 ) => {
   if (!flashItem.drive || !flashItem.fullPath) throw new Error('drive not set')
 

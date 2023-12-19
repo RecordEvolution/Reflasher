@@ -14,7 +14,9 @@ export enum RPC {
   CancelFlashing = 'cancel-flashing',
   SetSudoPassword = 'set-sudo-password',
   IsSudoPasswordSet = 'isset-sudo-password',
-  GetPlatform = 'get-platform'
+  GetPlatform = 'get-platform',
+  TestDevice = 'test-device',
+  StopDevice = 'stop-device'
 }
 
 export type ImageInfo = {
@@ -86,7 +88,7 @@ export type FlashState =
   | 'extracting-iso'
   | 'recreating-iso'
 
-export type FlashProgress = {
+export type Progress = {
   canceled: boolean
   position: number
   bytes: number
@@ -106,6 +108,7 @@ export type FlashItem = {
   id: number
   fullPath: string
   reswarm?: {
+    configPath?: string
     config?: ReswarmConfig
     board?: SupportedBoard
     wifiPassword?: string

@@ -4,28 +4,26 @@ import { access, mkdir, readFile } from 'node:fs/promises'
 import { createWriteStream, createReadStream } from 'node:fs'
 import https from 'node:https'
 import path from 'node:path'
-import { ImageInfo, SupportedBoard } from '../../types'
+import { ImageInfo, Progress, SupportedBoard } from '../../types'
+import { calculateETA, calculateSpeed, downloadFile } from '../utils'
 
 const CONFIG_PATH = '.Reflasher'
 const AVAILABLE_IMAGES = 'supportedBoardsImages.json'
 const BUCKET_URL = 'https://storage.googleapis.com/reswarmos/'
+export const REFLASHER_CONFIG_PATH = path.join(homedir(), CONFIG_PATH)
 
 export default class ImageManager {
-  get reflasherConfigPath() {
-    return path.join(homedir(), CONFIG_PATH)
-  }
-
   getImagePath(image: ImageInfo) {
-    return path.join(this.reflasherConfigPath, image.file.slice(0, -3))
+    return path.join(REFLASHER_CONFIG_PATH, image.file.slice(0, -3))
   }
 
   async createReflasherDirIfNotExists() {
     try {
-      await access(this.reflasherConfigPath)
+      await access(REFLASHER_CONFIG_PATH)
     } catch {
-      console.log(`Creating config folder at ${this.reflasherConfigPath}`)
+      console.log(`Creating config folder at ${REFLASHER_CONFIG_PATH}`)
       try {
-        await mkdir(this.reflasherConfigPath)
+        await mkdir(REFLASHER_CONFIG_PATH)
       } catch (error) {
         console.log('Could not create config folder')
         throw error
@@ -34,7 +32,7 @@ export default class ImageManager {
   }
 
   async readSupportedBoards(): Promise<SupportedBoard[]> {
-    const fileContent = await readFile(path.join(this.reflasherConfigPath, AVAILABLE_IMAGES))
+    const fileContent = await readFile(path.join(REFLASHER_CONFIG_PATH, AVAILABLE_IMAGES))
     const parsed = JSON.parse(fileContent.toString())
     return parsed.boards
   }
@@ -60,7 +58,7 @@ export default class ImageManager {
 
   async checkIfImageZipExists(image: ImageInfo): Promise<boolean> {
     try {
-      await access(path.join(this.reflasherConfigPath, image.file))
+      await access(path.join(REFLASHER_CONFIG_PATH, image.file))
       return true
     } catch {
       return false
@@ -69,81 +67,23 @@ export default class ImageManager {
 
   async checkIfImageFileExists(image: ImageInfo): Promise<boolean> {
     try {
-      await access(path.join(this.reflasherConfigPath, image.file.slice(0, -3)))
+      await access(path.join(REFLASHER_CONFIG_PATH, image.file.slice(0, -3)))
       return true
     } catch {
       return false
     }
   }
 
-  calculateSpeed = (
-    written: number,
-    elapsedTime: number
-  ): { speed: number; averageSpeed: number } => {
-    const speed = written / elapsedTime // Bytes per second
-    const averageSpeed = written / (elapsedTime / 1000) // Bytes per second (convert elapsedTime to seconds)
-    return { speed, averageSpeed }
-  }
-
-  calculateETA = (written: number, speed: number, totalSize: number): number => {
-    const remainingBytes = totalSize - written
-    return remainingBytes / speed // Seconds
-  }
-
   async downloadImageToFile(
     image: ImageInfo,
     tempPath: string,
-    progress?: (payload: {
-      percentage: number
-      averageSpeed: number
-      speed: number
-      eta: number
-      bytesWritten: number
-    }) => void
+    progress?: (payload: Partial<Progress>) => void
   ) {
-    const writeStream = createWriteStream(tempPath)
-
-    let written = 0
-    let startTime: number | null = null
-
     if (progress) {
       progress({ averageSpeed: 0, eta: 0, percentage: 0, speed: 0, bytesWritten: 0 })
     }
 
-    await new Promise((resolve, reject) => {
-      https
-        .get(image.download, (res) => {
-          startTime = Date.now()
-
-          res.on('data', (buf) => {
-            writeStream.write(buf, (err) => {
-              if (err) {
-                reject(err)
-              }
-              if (progress) {
-                written += buf.length
-                const elapsedTime = (Date.now() - startTime!) / 1000 // Convert to seconds
-                const { speed, averageSpeed } = this.calculateSpeed(written, elapsedTime)
-                const eta = this.calculateETA(written, speed, image.size)
-                const percentage = (written / image.size) * 100
-                progress({ percentage, averageSpeed, eta, speed, bytesWritten: written })
-              }
-            })
-          })
-
-          res.on('end', () => {
-            writeStream.end(() => {
-              writeStream.close()
-            })
-          })
-        })
-        .on('error', (err) => {
-          reject(err)
-        })
-        .on('close', () => {
-          resolve(undefined)
-        })
-    })
+    return downloadFile(image.download, tempPath, progress)
   }
 
   unZipImage(
@@ -190,8 +130,8 @@ export default class ImageManager {
           if (progress) {
             written += buf.length
             const elapsedTime = (Date.now() - startTime!) / 1000 // Convert to seconds
-            const { speed, averageSpeed } = this.calculateSpeed(written, elapsedTime)
-            const eta = this.calculateETA(written, speed, image.size)
+            const { speed, averageSpeed } = calculateSpeed(written, elapsedTime)
+            const eta = calculateETA(written, speed, image.size)
             const percentage = (written / image.size) * 100
             progress({ percentage, averageSpeed, eta, speed, bytesWritten: written })
           }

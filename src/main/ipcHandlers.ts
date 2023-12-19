@@ -1,5 +1,4 @@
 import { BrowserWindow, OpenDialogOptions, dialog, ipcMain } from 'electron'
-import { platform } from 'os'
 import { FlashItem, RPC } from '../types'
 import { automountDrive, listDrives, listPartitions, unmountDisk } from '../main/api/drives'
 import { scanner } from 'etcher-sdk'
@@ -10,6 +9,7 @@ import { scanNetworks } from './api/wifi'
 import { cancelFlashing, flashDevice, imageManager } from './api/flash'
 import { isSudoPasswordSet, setSudoPassword } from './api/permissions'
 import { Drive } from 'drivelist'
+import { agentManager } from './api/agent'
 
 function handleListDrives() {
   return listDrives()
@@ -35,7 +35,7 @@ function handleDriveScanner(mainWindow: BrowserWindow) {
     }),
     new scanner.adapters.UsbbootDeviceAdapter()
   ]
-  if (platform() === 'win32') {
+  if (process.platform === 'win32') {
     if (scanner.adapters.DriverlessDeviceAdapter !== undefined) {
       adapters.push(new scanner.adapters.DriverlessDeviceAdapter())
     }
@@ -96,6 +96,24 @@ function handleFlashDevice(_, mainWindow: BrowserWindow, flashItem: FlashItem) {
   })
 }
 
+function handleAgentEvents(mainWindow: BrowserWindow) {
+  agentManager.on('logs', (logs) => {
+    mainWindow.webContents.send('agent-logs', { logs })
+  })
+
+  agentManager.on('state', (state) => {
+    mainWindow.webContents.send('agent-state', { state })
+  })
+}
+
+function handleTestDevice(flashItem: FlashItem) {
+  agentManager.startAgent(flashItem)
+}
+
+function handleStopDevice() {
+  agentManager.stopAgent()
+}
+
 function handleSetSudoPassword(password: string) {
   return setSudoPassword(password)
 }
@@ -126,6 +144,9 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.IsSudoPasswordSet, handleIsSudoPasswordSet)
   ipcMain.handle(RPC.CancelFlashing, (_, id) => handleCancelFlashing(id))
   ipcMain.handle(RPC.GetPlatform, handleGetPlatform)
+  ipcMain.handle(RPC.TestDevice, (_, flashItem) => handleTestDevice(flashItem))
+  ipcMain.handle(RPC.StopDevice, handleStopDevice)
 
   handleDriveScanner(mainWindow)
+  handleAgentEvents(mainWindow)
 }

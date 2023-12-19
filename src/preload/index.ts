@@ -9,7 +9,8 @@ import { WiFiNetwork } from 'node-wifi'
 // Custom APIs for renderer
 const api = {
   listDrives: () => ipcRenderer.invoke(RPC.ListDrives) as Promise<Drive[]>,
-  listPartitions: (drive: Drive, password?: string) => ipcRenderer.invoke(RPC.ListPartitions, drive, password),
+  listPartitions: (drive: Drive, password?: string) =>
+    ipcRenderer.invoke(RPC.ListPartitions, drive, password),
   unmount: (path: string) => ipcRenderer.invoke(RPC.Unmount, path) as Promise<void>,
   mount: (drive: Drive) => ipcRenderer.invoke(RPC.Mount, drive) as Promise<void>,
   chooseFile: () => ipcRenderer.invoke(RPC.ChooseFile) as Promise<Electron.OpenDialogReturnValue>,
@@ -24,6 +25,8 @@ const api = {
   ) => ipcRenderer.invoke(RPC.ReadFile, path, options),
   getSupportedBoards: () => ipcRenderer.invoke(RPC.GetSupportedBoards) as Promise<SupportedBoard[]>,
   scanWifi: () => ipcRenderer.invoke(RPC.ScanWifi) as Promise<WiFiNetwork[]>,
+  testDevice: (flashItem: FlashItem) => ipcRenderer.invoke(RPC.TestDevice, flashItem),
+  stopDevice: () => ipcRenderer.invoke(RPC.StopDevice),
   flashDevice: (flashItem: FlashItem) => ipcRenderer.invoke(RPC.FlashDevice, flashItem),
   cancelFlashing: (id: number) => ipcRenderer.invoke(RPC.CancelFlashing, id),
   setSudoPassword: (password: string) => ipcRenderer.invoke(RPC.SetSudoPassword, password),

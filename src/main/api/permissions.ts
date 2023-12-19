@@ -156,7 +156,7 @@ export const elevatedChildProcess = async (
   return childProcess('sudo', ['-E', '-S', command, ...args], onStdout, onStderr, onExit, options)
 }
 
-export const childProcess = async (
+export const childProcess = (
   command: string,
   args: string[],
   onStdout?: (data: string) => void,
