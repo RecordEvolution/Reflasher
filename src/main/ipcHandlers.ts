@@ -134,13 +134,13 @@ function handleCancelFlashing(id: number) {
   return cancelFlashing(id)
 }
 
-function handleListPartitions(drive: Drive, password?: string) {
-  return listPartitions(drive, password)
+function handleListPartitions(drive: Drive) {
+  return listPartitions(drive)
 }
 
 export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.ListDrives, handleListDrives)
-  ipcMain.handle(RPC.ListPartitions, (_, drive, password) => handleListPartitions(drive, password))
+  ipcMain.handle(RPC.ListPartitions, (_, drive) => handleListPartitions(drive))
   ipcMain.handle(RPC.Unmount, handleUnmount)
   ipcMain.handle(RPC.Mount, handleMount)
   ipcMain.handle(RPC.ChooseFile, () => handleChooseFile(mainWindow))

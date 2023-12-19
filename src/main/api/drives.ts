@@ -117,7 +117,7 @@ export const listPartitionsLinux = async (drive: Drive) => {
   return parseUnixPartitionOutput(stdout)
 }
 
-export const listPartitions = async (drive: Drive, password?: string) => {
+export const listPartitions = async (drive: Drive) => {
   switch (process.platform) {
     case 'darwin': {
       return listPartitionsDarwin(drive)
