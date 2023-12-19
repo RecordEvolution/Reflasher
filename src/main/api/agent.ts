@@ -171,9 +171,6 @@ class AgentManager extends EventEmitter {
     })
   }
 
-  private onAgentDownloadProgress(progress: Partial<Progress>) {
-    this.emit('download-progress', { state: 'downloading', progress })
-  }
 
   async init() {
     await this.createAgentDirIfNotExists()
@@ -182,7 +179,9 @@ class AgentManager extends EventEmitter {
     if (shouldDownload) {
       try {
         this.emit('download-progress', { state: 'downloading' })
-        await this.downloadAgent(this.onAgentDownloadProgress)
+        await this.downloadAgent((progress) => {
+          this.emit('download-progress', { state: 'downloading', progress })
+        })
       } finally {
         this.downloadPromise = null
         this.emit('download-progress', { state: 'finished' })
