@@ -45,7 +45,7 @@ protocols:
       - reswarm
 fileAssociations:
   - ext: reswarm
-    description: Reswarm file type
+    description: Reswarm Device File
     icon: src/assets/icons/icon.icns
     mimeType: text/x-reswarm
     role: Viewer
