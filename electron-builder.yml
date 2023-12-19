@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: reflasher
+appId: com.recordevolution.reflasher
+productName: Reflasher
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: reflasher
+  executableName: Reflasher
   requestedExecutionLevel: requireAdministrator
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
@@ -34,11 +34,21 @@ linux:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
+  maintainer: record-evolution.de
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
+protocols:
+  - name: reswarm-protocol
+    schemes:
+      - reswarm
+fileAssociations:
+  - ext: reswarm
+    description: Reswarm file type
+    icon: src/assets/icons/icon.icns
+    mimeType: text/x-reswarm
+    role: Viewer
 electronVersion: 19.1.9 # Version
 publish:
   provider: generic

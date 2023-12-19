@@ -48,8 +48,19 @@ function createWindow() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  if (process.platform === 'linux' || process.platform === 'win32') {
+    if (app.isPackaged) {
+      // workaround for missing executable argument)
+      process.argv.unshift()
+    }
+    // parameters is now an array containing any files/folders that your OS will pass to your application
+    const parameters = process.argv.slice(2)
+
+    console.log(parameters)
+  }
+
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.recordevolution')
 
   if (is.dev) {
     await installExtension('nhdogjmejiglipccpnnnanhbledajbpd', {
