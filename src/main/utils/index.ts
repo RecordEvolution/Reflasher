@@ -23,7 +23,6 @@ export const getRemoteFileSize = (url: string): Promise<number> => {
       result.on('error', rej)
       result.on('data', console.log)
       result.on('end', () => {
-        console.log('end--------------------------')
         if (result.statusCode !== 200) return rej(new Error('failed to get file'))
         res(parseInt(result?.headers?.['content-length'] ?? '0'))
       })
