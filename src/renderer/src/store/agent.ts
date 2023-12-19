@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { FlashItem } from 'src/types'
+import { FlashItem, Progress } from 'src/types'
 import Convert from 'ansi-to-html'
 import { deepToRaw } from '@renderer/utils'
 
@@ -9,6 +9,8 @@ type AgentStoreState = {
   agentState: string
   dockerInitialized: boolean
   _dockerInfoDialog: boolean
+  _downloadProgress: Partial<Progress>
+  _downloadState: 'idle' | 'downloading' | 'finished'
   initialized: boolean
 }
 const ansi_converter = new Convert({ stream: true, bg: '#fff', fg: '#000' })
@@ -20,6 +22,8 @@ export const useAgentStore = () => {
       initialized: false,
       dockerInitialized: false,
       _dockerInfoDialog: false,
+      _downloadState: 'idle',
+      _downloadProgress: {},
       agentState: '',
       flashItem: null
     }),
@@ -27,6 +31,8 @@ export const useAgentStore = () => {
       logs: (state) => state.items,
       hasDocker: (state) => state.dockerInitialized,
       dockerInfoDialog: (state) => state._dockerInfoDialog,
+      downloadState: (state) => state._downloadState,
+      downloadProgress: (state) => state._downloadProgress,
       activeItem: (state) => state.flashItem,
       active: (state) => state.agentState === 'active',
       state: (state) => state.agentState
@@ -59,6 +65,11 @@ export const useAgentStore = () => {
         window.ipcRenderer.receive('agent-state', ({ state, activeItem }) => {
           this.agentState = state
           this.flashItem = activeItem
+        })
+
+        window.ipcRenderer.receive('agent-download-progress', ({ state, progress }) => {
+          this._downloadState = state
+          this._downloadProgress = progress
         })
 
         this.initialized = true

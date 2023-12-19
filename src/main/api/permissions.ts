@@ -1,10 +1,17 @@
-import { spawn, exec, SpawnOptionsWithoutStdio } from 'child_process'
+import {
+  spawn,
+  exec,
+  SpawnOptionsWithoutStdio,
+  ChildProcessWithoutNullStreams
+} from 'child_process'
 import fs from 'fs/promises'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
 let sudoPassword: string
 let sudoPasswordSet: boolean
+
+export const activeProcesses: ChildProcessWithoutNullStreams[] = []
 
 export const setSudoPassword = async (password: string) => {
   const isValidSudoPassword = await checkSudoPassword(password)
@@ -83,6 +90,7 @@ export const elevatedExecUnix = async (
 
     const args = ['-E', '-S', ...command.split(' ')]
     const childProcess = spawn('sudo', args)
+    activeProcesses.push(childProcess)
 
     childProcess.stdin.write(getSudoPassword())
     childProcess.stdin.end()
@@ -96,6 +104,8 @@ export const elevatedExecUnix = async (
     })
 
     childProcess.on('exit', (code, signal) => {
+      activeProcesses.splice(activeProcesses.indexOf(childProcess), 1)
+
       if (code != null && code < 0) {
         return rej({ error, code, signal })
       }
@@ -121,6 +131,7 @@ const elevatedNodeChildProcessUnix = async (
   const command = 'sudo'
   const args = ['-E', '-S', process.execPath, scriptPath]
   const childProcess = spawn(command, args, { env: { ELECTRON_RUN_AS_NODE: '1' }, ...options })
+  activeProcesses.push(childProcess)
 
   childProcess.stdin.write(getSudoPassword())
   childProcess.stdin.end()
@@ -136,6 +147,8 @@ const elevatedNodeChildProcessUnix = async (
   childProcess.on('error', (d) => console.log(d))
 
   childProcess.on('exit', (code, signal) => {
+    activeProcesses.splice(activeProcesses.indexOf(childProcess), 1)
+
     fs.unlink(scriptPath)
     if (onExit) {
       onExit(code, signal)
@@ -165,6 +178,7 @@ export const childProcess = (
   options?: SpawnOptionsWithoutStdio
 ) => {
   const childProcess = spawn(command, args, options)
+  activeProcesses.push(childProcess)
 
   if (onStdout) {
     childProcess.stdout.on('data', (data) => onStdout(data.toString()))
@@ -177,6 +191,8 @@ export const childProcess = (
   childProcess.on('error', (d) => console.log(d))
 
   childProcess.on('exit', (code, signal) => {
+    activeProcesses.splice(activeProcesses.indexOf(childProcess), 1)
+
     if (onExit) {
       onExit(code, signal)
     }
@@ -202,6 +218,7 @@ const elevatedNodeChildProcessWindows = async (
   const args = [scriptPath]
 
   const childProcess = spawn(command, args, { env: { ELECTRON_RUN_AS_NODE: '1' }, ...options })
+  activeProcesses.push(childProcess)
 
   if (onStdout) {
     childProcess.stdout.on('data', (data) => onStdout(data.toString()))
@@ -214,7 +231,8 @@ const elevatedNodeChildProcessWindows = async (
   childProcess.on('error', (d) => console.log(d))
 
   childProcess.on('exit', (code, signal) => {
-    // fs.unlink(scriptPath)
+    activeProcesses.splice(activeProcesses.indexOf(childProcess), 1)
+
     if (onExit) {
       onExit(code, signal)
     }

@@ -7,7 +7,7 @@ import { OpenMode } from 'fs'
 import { Abortable } from 'events'
 import { scanNetworks } from './api/wifi'
 import { cancelFlashing, flashDevice, imageManager } from './api/flash'
-import { execAsync, isSudoPasswordSet, setSudoPassword } from './api/permissions'
+import { isSudoPasswordSet, setSudoPassword } from './api/permissions'
 import { Drive } from 'drivelist'
 import { agentManager, hasDocker } from './api/agent'
 
@@ -103,6 +103,10 @@ function handleAgentEvents(mainWindow: BrowserWindow) {
 
   agentManager.on('state', ({ activeItem, state }) => {
     mainWindow.webContents.send('agent-state', { activeItem, state })
+  })
+
+  agentManager.on('download-progress', ({ progress, state }) => {
+    mainWindow.webContents.send('agent-download-progress', { progress, state })
   })
 }
 

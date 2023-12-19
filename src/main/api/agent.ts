@@ -21,7 +21,6 @@ export const hasDocker = async () => {
 
 class AgentManager extends EventEmitter {
   private logs: string[] = []
-  private dockerInitialized = false
   private activeItem: FlashItem | null = null
   private state: AgentState = 'inactive'
   private downloadPromise: Promise<void> | null = null
@@ -107,7 +106,12 @@ class AgentManager extends EventEmitter {
   }
 
   async startAgent(flashItem: FlashItem) {
+    if (this.downloadPromise) {
+      await this.downloadPromise
+    }
+
     const isDockerInitialized = await hasDocker()
+
     if (!isDockerInitialized) throw new Error('docker is not initialized!')
 
     if (this.agentProcess) throw new Error('an existing agent process is already running!')
@@ -167,12 +171,22 @@ class AgentManager extends EventEmitter {
     })
   }
 
+  private onAgentDownloadProgress(progress: Partial<Progress>) {
+    this.emit('download-progress', { state: 'downloading', progress })
+  }
+
   async init() {
     await this.createAgentDirIfNotExists()
 
     const shouldDownload = await this.shouldDownloadAgent()
     if (shouldDownload) {
-      await this.downloadAgent()
+      try {
+        this.emit('download-progress', { state: 'downloading' })
+        await this.downloadAgent(this.onAgentDownloadProgress)
+      } finally {
+        this.downloadPromise = null
+        this.emit('download-progress', { state: 'finished' })
+      }
     }
   }
 

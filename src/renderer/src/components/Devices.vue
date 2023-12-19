@@ -20,6 +20,7 @@ const wifiStore = useWifiStore()
 const flashStore = useFlashStore()
 const agentStore = useAgentStore()
 
+const { downloadState } = storeToRefs(agentStore)
 const { drives } = storeToRefs(drivesStore)
 const { boards } = storeToRefs(boardStore)
 const { accessPoints } = storeToRefs(wifiStore)
@@ -206,6 +207,7 @@ watch(drives, (updatedDl) => {
                 <v-btn
                   size="small"
                   variant="outlined"
+                  :loading="downloadState === 'downloading'"
                   @click.native.stop="flashStore.flashDevice(flashItem)"
                   height="40"
                   color="accent"

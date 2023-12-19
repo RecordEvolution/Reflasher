@@ -4,7 +4,7 @@ import { setupIpcHandlers } from './ipcHandlers'
 import installExtension from 'electron-devtools-installer'
 import icon from '../../resources/icon.png?asset'
 import { join } from 'path'
-import { resolveBinaryPath } from './api/iso'
+import { activeProcesses } from './api/permissions'
 
 function createWindow() {
   // Create the browser window.
@@ -80,6 +80,12 @@ app.whenReady().then(async () => {
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    activeProcesses.forEach((process) => {
+      try {
+        process.kill('SIGKILL')
+      } catch (error) {}
+    })
+
     app.quit()
   }
 })
