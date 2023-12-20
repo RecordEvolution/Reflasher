@@ -2,6 +2,9 @@ import { createWriteStream, promises } from 'fs'
 import fs from 'fs/promises'
 import https from 'https'
 import { Progress } from '../../types'
+import { is } from '@electron-toolkit/utils'
+import path from 'path'
+import { APPIMAGE_MOUNT_POINT } from '../api/permissions'
 
 export const calculateSpeed = (
   written: number,
@@ -30,6 +33,16 @@ export const getRemoteFileSize = (url: string): Promise<number> => {
 
     request.end()
   })
+}
+
+export const getNodeModulesResourcePath = (moduleName: string) => {
+  if (is.dev) return moduleName
+
+  const resourcePath = process.env.APPIMAGE
+    ? path.join(APPIMAGE_MOUNT_POINT, 'resources')
+    : process.resourcesPath
+
+  return path.join(resourcePath, 'app.asar/node_modules', moduleName)
 }
 
 export const fileExists = async (filePath: string) => {

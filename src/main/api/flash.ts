@@ -1,4 +1,5 @@
 import { automountDriveLinux, waitForMount } from './drives'
+import { getNodeModulesResourcePath } from '../utils'
 import { ChildProcessWithoutNullStreams } from 'child_process'
 import { FlashItem, Progress } from '../../types'
 import { elevatedNodeChildProcess } from './permissions'
@@ -6,7 +7,6 @@ import { copyFile, rename, unlink, writeFile } from 'fs/promises'
 import ImageManager, { REFLASHER_CONFIG_PATH } from './boards'
 import path from 'path'
 import { Drive } from 'drivelist'
-import { is } from '@electron-toolkit/utils'
 import {
   cleanupISOContents,
   extractISO,
@@ -53,10 +53,7 @@ const getReswarmImage = async (
     imagePath = imageManager.getImagePath(image)
   } else {
     const zippedImageTempPath = path.join(REFLASHER_CONFIG_PATH, 'temp-' + image.file)
-    const realImageTempPath = path.join(
-      REFLASHER_CONFIG_PATH,
-      'temp-' + image.file.slice(0, -3)
-    )
+    const realImageTempPath = path.join(REFLASHER_CONFIG_PATH, 'temp-' + image.file.slice(0, -3))
 
     const realImagePath = path.join(REFLASHER_CONFIG_PATH, image.file.slice(0, -3))
 
@@ -122,7 +119,7 @@ export const flashDevice = async (
     stringifiedDrive = stringifiedDrive.replace(/\\/g, '\\\\')
   }
 
-  const etcherSDKRequire = is.dev ? 'etcher-sdk' : './app.asar/node_modules/etcher-sdk'
+  const etcherSDKRequire = getNodeModulesResourcePath('etcher-sdk')
   const scriptContent = `
     const { sourceDestination, multiWrite } = require('${etcherSDKRequire}')
     process.on('SIGTERM', () => {
@@ -195,6 +192,7 @@ export const flashDevice = async (
       try {
         updateState(JSON.parse(data))
       } catch (error) {
+        console.error('An error occurred while flashing:', data)
         updateState({ type: 'failed' })
       }
     },

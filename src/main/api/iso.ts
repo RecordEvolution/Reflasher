@@ -5,7 +5,7 @@ import path from 'path'
 import { resourcesPath } from 'process'
 import { is } from '@electron-toolkit/utils'
 import { app } from 'electron'
-import { childProcess, elevatedExec, execAsync, elevatedChildProcess } from './permissions'
+import { childProcess, elevatedExec, execAsync } from './permissions'
 
 const getISOMountPath = (deviceId: string) => path.join(os.tmpdir(), 'iso-mount', deviceId)
 
@@ -238,7 +238,7 @@ const rebuildISOFromContents = async (
 
   // Rebuild ISO
   await new Promise((res, rej) => {
-    elevatedChildProcess(
+    childProcess(
       xorrisoPath,
       args,
       (stdout) => handleRecreateProgress(stdout, progressCb),
@@ -250,7 +250,7 @@ const rebuildISOFromContents = async (
           rej(false)
         }
       },
-      { cwd: contentsPath }
+      { cwd: contentsPath, elevated: true }
     )
   })
 

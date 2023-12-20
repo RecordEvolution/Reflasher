@@ -1,6 +1,6 @@
 import { Drive, list as listdrives } from 'drivelist'
 import { elevatedNodeChildProcess, elevatedExecUnix, execAsync } from './permissions'
-import { is } from '@electron-toolkit/utils'
+import { getNodeModulesResourcePath } from '../utils'
 
 export async function listDrives() {
   const drives = await listdrives()
@@ -171,16 +171,16 @@ export const waitForMount = async (description: string) => {
 }
 
 export async function unmountDisk(drivePath: string) {
-  let path = drivePath
+  let actualDrivePath = drivePath
   if (process.platform === 'win32') {
-    path = path.replace(/\\/g, '\\\\')
+    actualDrivePath = actualDrivePath.replace(/\\/g, '\\\\')
   }
 
-  const mountutilsRequire = is.dev ? 'mountutils' : './app.asar/node_modules/mountutils'
+  const mountutilsRequire = getNodeModulesResourcePath('mountutils')
   const scriptContent = `
     const mountutils = require('${mountutilsRequire}');
 
-    mountutils.unmountDisk("${path}", (err) => {
+    mountutils.unmountDisk("${actualDrivePath}", (err) => {
       if (err) {
         process.stderr.write(err.message);
         process.exit(1);
