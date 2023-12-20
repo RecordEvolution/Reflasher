@@ -9,7 +9,7 @@ declare global {
     api: Api
     sudoDialog: typeof SudoDialogVue
     ipcRenderer: {
-      send: (channel: string, data: any) => void
+      send: (channel: string, data?: any) => void
       receive: (channel: string, cb: Function) => void
     }
   }

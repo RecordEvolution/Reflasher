@@ -26,6 +26,16 @@ const { boards } = storeToRefs(boardStore)
 const { accessPoints } = storeToRefs(wifiStore)
 const { flashItems } = storeToRefs(flashStore)
 
+async function addByFilePicker() {
+  const { canceled, filePaths } = await window.api.chooseFile()
+
+  if (canceled) return
+
+  const [fullPath] = filePaths
+
+  return flashStore.addItem(fullPath)
+}
+
 // Update drive of flashitem if drive list changes
 watch(drives, (updatedDl) => {
   flashItems.value.forEach((fi) => {
@@ -54,7 +64,7 @@ watch(drives, (updatedDl) => {
         <template v-slot:activator="{ props }">
           <v-btn
             v-bind="props"
-            @click="flashStore.addItem"
+            @click="addByFilePicker"
             icon="mdi-plus"
             fixed
             elevation="10"

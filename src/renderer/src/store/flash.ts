@@ -20,14 +20,9 @@ export const useFlashStore = () => {
       }
     },
     actions: {
-      async addItem() {
+      async addItem(fullPath: string) {
         const driveStore = useDrivesStore()
         const boardStore = useBoardStore()
-        const { canceled, filePaths } = await window.api.chooseFile()
-
-        if (canceled) return
-
-        const [fullPath] = filePaths
 
         const splitPath = fullPath.split('/')
         const fileName = splitPath.at(-1) as string
@@ -61,7 +56,10 @@ export const useFlashStore = () => {
           const board = boardStore.boards.find(
             (b) => b.model === config.board.model
           ) as SupportedBoard
-          config.board = board
+
+          // It can happen that the boards are not intialized (e.g. when opening Reflasher with .reswarm file)
+          // In that case we just fallback to the actual config
+          config.board = board ?? config.board
 
           flashItem.reswarm = {
             configPath: fullPath,
@@ -96,6 +94,12 @@ export const useFlashStore = () => {
         this.items.splice(flashItemIndex, 1)
       },
       initialize() {
+        document.addEventListener('drop', console.log)
+
+        window.ipcRenderer.receive('add-image-item', ({ filePath }: { filePath: string }) => {
+          this.addItem(filePath)
+        })
+
         window.ipcRenderer.receive(
           'flash-progress',
           ({ progress, id }: { progress: Progress; id: number }) => {
@@ -121,6 +125,8 @@ export const useFlashStore = () => {
             item.flash.avgSpeed = progress.averageSpeed ?? 0
           }
         )
+
+        window.ipcRenderer.send('image-item-store-ready')
       }
     }
   })

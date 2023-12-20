@@ -1,10 +1,11 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { setupIpcHandlers } from './ipcHandlers'
 import installExtension from 'electron-devtools-installer'
 import icon from '../../resources/icon.png?asset'
 import { join } from 'path'
 import { activeProcesses, cleanupAppImageIfExists } from './api/permissions'
+import { isFile } from './utils'
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -32,6 +33,13 @@ function createWindow() {
     return { action: 'deny' }
   })
 
+  // Prevent external resources from being loaded (like images)
+  // when dropping them on the WebView.
+  // See https://github.com/electron/electron/issues/5919
+  // mainWindow.webContents.on('will-navigate', (event) => {
+  //   event.preventDefault()
+  // })
+
   setupIpcHandlers(mainWindow)
 
   // HMR for renderer base on electron-vite cli.
@@ -44,6 +52,10 @@ function createWindow() {
 
   return mainWindow
 }
+
+app.on('before-quit', () => {
+  app.releaseSingleInstanceLock()
+})
 
 app.on('window-all-closed', async () => {
   activeProcesses.forEach((process) => {
@@ -59,21 +71,14 @@ app.on('window-all-closed', async () => {
   }
 })
 
+function imageItemListReady() {
+  return new Promise((res) => ipcMain.on('image-item-store-ready', res))
+}
+
 async function main() {
   if (!app.requestSingleInstanceLock()) return app.quit()
 
   await app.whenReady()
-
-  if (process.platform === 'linux' || process.platform === 'win32') {
-    if (app.isPackaged) {
-      // workaround for missing executable argument)
-      process.argv.unshift()
-    }
-    // parameters is now an array containing any files/folders that your OS will pass to your application
-    const parameters = process.argv.slice(2)
-
-    console.log(parameters)
-  }
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.recordevolution')
@@ -108,6 +113,25 @@ async function main() {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  if (process.platform === 'linux' || process.platform === 'win32') {
+    const parameters = process.argv.slice(app.isPackaged ? 1 : 2)
+
+    if (!parameters.length) return
+
+    const param = parameters[parameters.length - 1]
+    if (param.startsWith('--')) {
+      return
+    }
+
+    if (!(await isFile(param))) return
+
+    await imageItemListReady()
+
+    BrowserWindow.getAllWindows().forEach((window) =>
+      window.webContents.send('add-image-item', { filePath: param })
+    )
+  }
 }
 
 main()

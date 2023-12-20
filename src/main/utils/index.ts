@@ -45,6 +45,16 @@ export const getNodeModulesResourcePath = (moduleName: string) => {
   return path.join(resourcePath, 'app.asar/node_modules', moduleName)
 }
 
+export async function isFile(filePath: string): Promise<boolean> {
+  try {
+    const stat = await fs.stat(filePath)
+    return stat.isFile()
+  } catch {
+    // noop
+  }
+  return false
+}
+
 export const fileExists = async (filePath: string) => {
   try {
     await fs.access(filePath)
