@@ -1,5 +1,5 @@
 import { BrowserWindow, OpenDialogOptions, dialog, ipcMain } from 'electron'
-import { FlashItem, RPC } from '../types'
+import { FlashItem, RPC, imageTypes } from '../types'
 import { automountDrive, listDrives, listPartitions, unmountDisk } from '../main/api/drives'
 import { scanner } from 'etcher-sdk'
 import { readFile } from 'fs/promises'
@@ -62,7 +62,7 @@ function handleChooseFile(mainWindow: BrowserWindow) {
   const options: OpenDialogOptions = {
     title: 'Select file',
     defaultPath: process.env.HOME + '/Downloads',
-    filters: [{ name: '.reswarm, .img, .iso', extensions: ['reswarm', 'img', 'iso'] }],
+    filters: [{ name: '.reswarm, .img, .iso', extensions: [...imageTypes] }],
     properties: ['openFile', 'multiSelections']
   }
 

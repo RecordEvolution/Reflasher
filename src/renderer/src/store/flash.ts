@@ -3,6 +3,10 @@ import { FlashItem, Progress, ReswarmConfig, SupportedBoard } from 'src/types'
 import { useDrivesStore } from './drives'
 import { useBoardStore } from './boards'
 import { deepToRaw } from '@renderer/utils'
+import path from 'path-browserify'
+
+const imageTypes = ['reswarm', 'iso', 'img'] as const
+type ImageType = (typeof imageTypes)[number]
 
 type FlashStoreState = {
   items: FlashItem[]
@@ -94,7 +98,21 @@ export const useFlashStore = () => {
         this.items.splice(flashItemIndex, 1)
       },
       initialize() {
-        document.addEventListener('drop', console.log)
+        document.body.addEventListener('dragover', (evt) => {
+          evt.preventDefault()
+        })
+
+        document.body.addEventListener('drop', (evt) => {
+          evt.preventDefault()
+
+          const { path: filePath } = evt?.dataTransfer?.files[0] ?? {}
+          if (!filePath) return
+
+          const { ext } = path.parse(filePath)
+          if (!imageTypes.includes(`${ext.slice(1) as ImageType}`)) return
+
+          this.addItem(filePath)
+        })
 
         window.ipcRenderer.receive('add-image-item', ({ filePath }: { filePath: string }) => {
           this.addItem(filePath)
