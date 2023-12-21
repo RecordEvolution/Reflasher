@@ -54,6 +54,27 @@ function createWindow() {
   return mainWindow
 }
 
+async function handleArguments(argv: string[]) {
+  if (process.platform === 'linux' || process.platform === 'win32') {
+    const parameters = argv.slice(app.isPackaged ? 1 : 2)
+
+    if (!parameters.length) return
+
+    const param = parameters[parameters.length - 1]
+    if (param.startsWith('--')) {
+      return
+    }
+
+    if (!(await isFile(param))) return
+
+    await imageItemListReady()
+
+    BrowserWindow.getAllWindows().forEach((window) =>
+      window.webContents.send('add-image-item', { filePath: param })
+    )
+  }
+}
+
 app.on('before-quit', () => {
   app.releaseSingleInstanceLock()
 })
@@ -99,7 +120,7 @@ async function main() {
     }
     window.focus()
 
-    console.log('opening second instance with:', { argv })
+    await handleArguments(argv)
   })
 
   // Default open or close DevTools by F12 in development
@@ -115,24 +136,7 @@ async function main() {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
-  if (process.platform === 'linux' || process.platform === 'win32') {
-    const parameters = process.argv.slice(app.isPackaged ? 1 : 2)
-
-    if (!parameters.length) return
-
-    const param = parameters[parameters.length - 1]
-    if (param.startsWith('--')) {
-      return
-    }
-
-    if (!(await isFile(param))) return
-
-    await imageItemListReady()
-
-    BrowserWindow.getAllWindows().forEach((window) =>
-      window.webContents.send('add-image-item', { filePath: param })
-    )
-  }
+  await handleArguments(process.argv)
 }
 
 main()
