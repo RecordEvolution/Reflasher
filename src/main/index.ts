@@ -54,6 +54,8 @@ function createWindow() {
   return mainWindow
 }
 
+const imageItemListReady = new Promise((res) => ipcMain.on('image-item-store-ready', res))
+
 async function handleArguments(argv: string[]) {
   if (process.platform === 'linux' || process.platform === 'win32') {
     const parameters = argv.slice(app.isPackaged ? 1 : 2)
@@ -67,7 +69,7 @@ async function handleArguments(argv: string[]) {
 
     if (!(await isFile(param))) return
 
-    await imageItemListReady()
+    await imageItemListReady
 
     BrowserWindow.getAllWindows().forEach((window) =>
       window.webContents.send('add-image-item', { filePath: param })
@@ -92,10 +94,6 @@ app.on('window-all-closed', async () => {
     app.quit()
   }
 })
-
-function imageItemListReady() {
-  return new Promise((res) => ipcMain.on('image-item-store-ready', res))
-}
 
 async function main() {
   if (!app.requestSingleInstanceLock()) return app.quit()
