@@ -5,13 +5,22 @@ const sudoPassword = ref('')
 const showDialog = ref(false)
 const showSudoPassword = ref(false)
 const passwordSet = ref(false)
+const checkingPassword = ref(false)
 const resolve = ref()
 const reject = ref()
 
 async function setSudoPassword() {
-  await window.api.setSudoPassword(sudoPassword.value)
-  passwordSet.value = true
-  showDialog.value = false
+  try {
+    checkingPassword.value = true
+    await window.api.setSudoPassword(sudoPassword.value)
+    passwordSet.value = true
+    showDialog.value = false
+  } catch (error) {
+    console.error('an error occurred', error)
+    return reject.value()
+  } finally {
+    checkingPassword.value = false
+  }
 
   return resolve.value()
 }
@@ -86,13 +95,14 @@ watch(showDialog, (newVal) => {
             name="input-sudoPasswd"
             variant="outlined"
             :label="$t('admin_password')"
+            :disabled="checkingPassword"
             @click:append="showSudoPassword = !showSudoPassword"
             v-on:keyup.enter="setSudoPassword"
           ></v-text-field>
         </v-container>
 
         <div class="d-flex justify-center">
-          <v-btn small color="secondary" rounded @click="setSudoPassword">
+          <v-btn small color="secondary" rounded :loading="checkingPassword" @click="setSudoPassword">
             <v-icon left> mdi-exit-to-app </v-icon>
             {{ $t('submit') }}
           </v-btn>

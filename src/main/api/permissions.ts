@@ -116,8 +116,7 @@ export const elevatedExecUnix = async (
 
     childProcess.on('exit', (code, signal) => {
       activeProcesses.splice(activeProcesses.indexOf(childProcess), 1)
-
-      if (code != null && code < 0) {
+      if (code != null && code !== 0) {
         return rej({ error, code, signal })
       }
 

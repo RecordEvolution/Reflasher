@@ -304,7 +304,7 @@ const extractISOContentsMac = async (
   const { stdout } = await elevatedExec(`hdiutil attach -nomount ${absoluteISOPath}`)
   const attachedDisk = stdout.split('\n')[0].split('\t')[0].trim()
 
-  await execAsync(`mount -t cd9660 ${attachedDisk} ${srcPath}`)
+  await elevatedExec(`mount -t cd9660 ${attachedDisk} ${srcPath}`)
 
   const src = await getFolderSize(srcPath)
   const progressInterval = setInterval(async () => {

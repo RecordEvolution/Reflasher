@@ -161,7 +161,7 @@ class AgentManager extends EventEmitter {
       this.agentProcess = null
       this.activeItem = null
 
-      if (code && code < 0) {
+      if (code && code !== 0) {
         this.state = 'failed'
       } else {
         this.state = 'inactive'
