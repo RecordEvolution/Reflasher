@@ -91,8 +91,7 @@ const getReswarmImage = async (
       updateState({ percentage, type: 'recreating-iso' })
     })
 
-    // cleanup ISO but don't wait
-    unmountISO(deviceId, devicePath)
+    unmountISO(deviceId, devicePath).catch(console.error)
 
     return recreatedImagePath
   }

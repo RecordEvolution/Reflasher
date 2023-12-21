@@ -7,6 +7,8 @@ import { is } from '@electron-toolkit/utils'
 import { app } from 'electron'
 import { childProcess, elevatedExec, execAsync } from './permissions'
 
+const unsupportedBinariesMac = ['xorriso']
+
 const getISOMountPath = (deviceId: string) => path.join(os.tmpdir(), 'iso-mount', deviceId)
 
 const getISOContentsPath = (deviceId: string) => path.join(os.tmpdir(), 'iso-contents', deviceId)
@@ -16,12 +18,16 @@ const getTempDataPath = (deviceId: string) => path.join(os.tmpdir(), deviceId)
 export const resolveBinaryPath = (command: string) => {
   if (process.platform === 'linux') return command
 
+  if (process.platform === 'darwin' && !unsupportedBinariesMac.includes(command)) {
+    return command
+  }
+
   const binariesPath = is.dev
     ? path.join(app.getAppPath(), 'resources', 'binaries', process.platform)
     : path.join(resourcesPath, 'app.asar.unpacked', 'resources', 'binaries', process.platform)
 
   let commandPath = `./${command}`
-  if (os.platform() === 'win32') {
+  if (process.platform === 'win32') {
     commandPath += '.exe'
   }
 
@@ -241,8 +247,9 @@ const rebuildISOFromContents = async (
     childProcess(
       xorrisoPath,
       args,
-      (stdout) => handleRecreateProgress(stdout, progressCb),
-      console.error,
+      undefined,
+      // For some reason xorriso update progress is piped to stderr
+      (stderr) => handleRecreateProgress(stderr, progressCb),
       (code, signal) => {
         if (code === 0 && signal === null) {
           res(true)
@@ -319,6 +326,7 @@ const extractISOContentsMac = async (
   clearInterval(progressInterval)
 
   await elevatedExec(`umount ${srcPath}`)
+
   await elevatedExec(`hdiutil detach ${attachedDisk}`)
 
   await elevatedExec(`chmod -R 777 ${destPath}`)
