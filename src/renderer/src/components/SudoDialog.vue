@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useSnackStore } from '@renderer/store/snack'
 import { ref, watch } from 'vue'
 
+const snackstore = useSnackStore()
 const sudoPassword = ref('')
 const showDialog = ref(false)
 const showSudoPassword = ref(false)
@@ -16,7 +18,10 @@ async function setSudoPassword() {
     passwordSet.value = true
     showDialog.value = false
   } catch (error) {
-    console.error('an error occurred', error)
+    snackstore.setText('errors.invalid_sudo_password')
+    snackstore.setColor('error')
+    snackstore.setVisible(true)
+
     return reject.value()
   } finally {
     checkingPassword.value = false
@@ -102,7 +107,13 @@ watch(showDialog, (newVal) => {
         </v-container>
 
         <div class="d-flex justify-center">
-          <v-btn small color="secondary" rounded :loading="checkingPassword" @click="setSudoPassword">
+          <v-btn
+            small
+            color="secondary"
+            rounded
+            :loading="checkingPassword"
+            @click="setSudoPassword"
+          >
             <v-icon left> mdi-exit-to-app </v-icon>
             {{ $t('submit') }}
           </v-btn>

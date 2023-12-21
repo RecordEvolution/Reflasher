@@ -5,6 +5,7 @@ import Settings from './components/Settings.vue'
 import Drives from './components/Drives.vue'
 import Devices from './components/Devices.vue'
 import SudoDialog from './components/SudoDialog.vue'
+import Snackbar from './components/Snackbar.vue'
 
 const sudoDialog = ref()
 const drivesDrawer = ref(false)
@@ -89,16 +90,6 @@ watch(sudoDialog, (newVal) => {
       </v-container>
     </v-footer>
 
-    <!-- -------------------- Snackbar -------------------- -->
-
-    <v-snackbar color="info" bottom>
-      <v-container fill-width>
-        <div id="snacker-message"></div>
-      </v-container>
-    </v-snackbar>
-
-    <!-- -------------------- Updater -------------------- -->
-
     <v-banner
       id="updaterBar"
       v-show="false"
@@ -158,6 +149,7 @@ watch(sudoDialog, (newVal) => {
     </v-dialog>
 
     <SudoDialog ref="sudoDialog" />
+    <Snackbar />
   </v-app>
 </template>
 

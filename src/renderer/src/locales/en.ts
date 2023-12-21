@@ -102,6 +102,9 @@ export default {
     download: 'Downloading Reflasher release',
     install: 'Quit and install new version ?'
   },
+  errors: {
+    invalid_sudo_password: 'The password you have entered is incorrect'
+  },
   flashing_state: {
     inactive: 'Inactive',
     flashing: 'Writing...',
