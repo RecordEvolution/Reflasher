@@ -12,7 +12,7 @@ const { flashItemById } = storeToRefs(flashStore)
 const flashItem = flashItemById.value(props.id ?? 0)
 </script>
 <template>
-  <v-container>
+  <div class="container">
     <!-- -------------------- final flash result -------------------- -->
 
     <div class="flashSeg">
@@ -31,6 +31,23 @@ const flashItem = flashItemById.value(props.id ?? 0)
         v-if="flashItem?.flash.state === 'failed'"
       >
         {{ $t('flashing_failed') }}
+      </v-alert>
+      <v-alert
+        class="ma-0 mp-0 text-center"
+        type="info"
+        color="error"
+        density="compact"
+        v-if="flashItem?.flash.state === 'flashing-canceled'"
+      >
+        {{ $t('flashing_canceled') }}
+      </v-alert>
+      <v-alert
+        class="ma-0 mp-0 text-center"
+        type="success"
+        density="compact"
+        v-if="flashItem?.flash.state === 'verification-canceled'"
+      >
+        {{ $t('verification_canceled') }}
       </v-alert>
     </div>
 
@@ -70,5 +87,15 @@ const flashItem = flashItemById.value(props.id ?? 0)
         {{ $t(`flashing_state.${flashItem?.flash.state}`) }}
       </v-progress-linear>
     </div>
-  </v-container>
+  </div>
 </template>
+<style>
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-bottom: 12px;
+  padding-right: 34px;
+  padding-left: 34px;
+  margin-right: auto;
+}
+</style>

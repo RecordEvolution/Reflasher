@@ -1,10 +1,4 @@
-import {
-  spawn,
-  exec,
-  SpawnOptionsWithoutStdio,
-  ChildProcessWithoutNullStreams,
-  ExecOptions
-} from 'child_process'
+import { spawn, exec, SpawnOptionsWithoutStdio, ExecOptions, ChildProcess } from 'child_process'
 import fs from 'fs/promises'
 import { tmpdir } from 'os'
 import path from 'path'
@@ -17,7 +11,7 @@ export const APPIMAGE_MOUNT_POINT = path.join(tmpdir(), 'ReflasherAppImage')
 let sudoPassword = ''
 let sudoPasswordSet = false
 
-export const activeProcesses: ChildProcessWithoutNullStreams[] = []
+export const activeProcesses: ChildProcess[] = []
 
 export const setSudoPassword = async (password: string) => {
   sudoPassword = password

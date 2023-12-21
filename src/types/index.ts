@@ -86,6 +86,8 @@ export type FlashState =
   | WriteStep
   | 'idle'
   | 'failed'
+  | 'flashing-canceled'
+  | 'verification-canceled'
   | 'downloading'
   | 'configuring'
   | 'starting'

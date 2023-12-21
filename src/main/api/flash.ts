@@ -1,6 +1,6 @@
 import { automountDriveLinux, waitForMount } from './drives'
 import { getNodeModulesResourcePath } from '../utils'
-import { ChildProcessWithoutNullStreams } from 'child_process'
+import { ChildProcess, ChildProcessWithoutNullStreams } from 'child_process'
 import { FlashItem, Progress } from '../../types'
 import { elevatedNodeChildProcess } from './permissions'
 import { copyFile, rename, unlink, writeFile } from 'fs/promises'
@@ -15,7 +15,7 @@ import {
   writeFileISOContents
 } from './iso'
 
-const activeFlashProcesses = new Map<number, ChildProcessWithoutNullStreams>()
+const activeFlashProcesses = new Map<number, ChildProcess>()
 export const imageManager = new ImageManager()
 imageManager.createReflasherDirIfNotExists()
 
@@ -121,9 +121,11 @@ export const flashDevice = async (
   const etcherSDKRequire = getNodeModulesResourcePath('etcher-sdk')
   const scriptContent = `
     const { sourceDestination, multiWrite } = require('${etcherSDKRequire}')
+    let progressData;
+
     process.on('SIGTERM', () => {
-      process.stdout.write('{"canceled":true}')
-      process.exit(0)
+      process.stdout.write(\`{"canceled":true, "type": "\${progressData.type}" }\`)
+      process.exit(1)
     });
 
     async function flash() {
@@ -140,7 +142,6 @@ export const flashDevice = async (
 
       const source = await _imageFile.getInnerSource()
 
-      let progressData
       await multiWrite.decompressThenFlash({
         source,
         destinations: [_blockDevice],

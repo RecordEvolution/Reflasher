@@ -220,6 +220,7 @@ watch(drives, (updatedDl) => {
                   :loading="downloadState === 'downloading'"
                   @click.native.stop="flashStore.flashDevice(flashItem)"
                   height="40"
+                  min-width="140px"
                   color="accent"
                 >
                   <v-icon> mdi-flash </v-icon>
@@ -321,6 +322,16 @@ watch(drives, (updatedDl) => {
                 <v-icon left> mdi-cancel </v-icon>
                 {{ $t('cancel_writing') }}
               </v-btn>
+              <v-btn
+                v-if="flashItem.flash.state === 'verifying'"
+                small
+                color="secondary"
+                height="40"
+                @click.native.stop="flashStore.cancelFlashing(flashItem)"
+              >
+                <v-icon left> mdi-skip-next </v-icon>
+                {{ $t('skip_verification') }}
+              </v-btn>
 
               <v-spacer></v-spacer>
 
@@ -330,7 +341,11 @@ watch(drives, (updatedDl) => {
                 color="secondary"
                 height="40"
                 @click="flashStore.reset(flashItem)"
-                v-if="flashItem.flash.state === 'finished' || flashItem.flash.state === 'failed'"
+                v-if="
+                  flashItem.flash.state === 'finished' ||
+                  flashItem.flash.state === 'failed' ||
+                  flashItem.flash.state === 'flashing-canceled'
+                "
               >
                 <v-icon left> mdi-refresh </v-icon>
                 {{ $t('try_again') }}

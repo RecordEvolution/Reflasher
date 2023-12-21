@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { FlashItem, Progress, ReswarmConfig, SupportedBoard } from 'src/types'
+import { FlashItem, FlashState, Progress, ReswarmConfig, SupportedBoard } from 'src/types'
 import { useDrivesStore } from './drives'
 import { useBoardStore } from './boards'
 import { deepToRaw } from '@renderer/utils'
@@ -12,6 +12,16 @@ type FlashStoreState = {
   items: FlashItem[]
   key: number
   initialized: boolean
+}
+
+const computeCanceledState = (state: FlashState): FlashState => {
+  switch (state) {
+    case 'flashing':
+      return 'flashing-canceled'
+    case 'verifying':
+      return 'verification-canceled'
+  }
+  return state
 }
 
 export const useFlashStore = () => {
@@ -127,7 +137,7 @@ export const useFlashStore = () => {
             if (progress.canceled) {
               item.flash = {
                 progress: 0,
-                state: 'idle',
+                state: computeCanceledState(progress.type),
                 speed: 0,
                 avgSpeed: 0,
                 eta: 0
