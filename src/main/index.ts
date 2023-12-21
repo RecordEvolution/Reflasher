@@ -14,6 +14,7 @@ function createWindow() {
     frame: true,
     resizable: false,
     maximizable: false,
+    title: 'Reflasher',
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
