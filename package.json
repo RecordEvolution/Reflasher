@@ -1,9 +1,11 @@
 {
   "name": "reflasher",
-  "version": "1.0.0",
-  "description": "An Electron application with Vue and TypeScript",
+  "version": "2.0.0",
+  "description": "An efficient, modern and reliable flashing tool for IoT applications",
+  "author": "Record Evolution GmbH",
+  "publisher": "Record Evolution GmbH",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "license": "MIT",
   "homepage": "https://www.electronjs.org",
   "scripts": {
     "format": "prettier --write .",

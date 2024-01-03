@@ -187,14 +187,14 @@ watch(drives, (updatedDl) => {
 
             <div class="buttons-container">
               <div class="editButtons" v-if="flashItem.flash.state === 'idle'">
-                <v-btn size="small" variant="outlined" height="40" color="accent" min-width="140px">
+                <v-btn size="small" height="40" color="primary" min-width="140px">
                   <v-icon> mdi-pencil </v-icon>
                   {{ $t('edit') }}
                 </v-btn>
               </div>
 
               <div class="editButtons" v-if="flashItem.flash.state !== 'idle'">
-                <v-btn size="small" variant="outlined" height="40" color="accent" min-width="140px">
+                <v-btn size="small" height="40" color="primary" min-width="140px">
                   <v-icon> mdi-scatter-plot </v-icon>
                   {{ $t('details') }}
                 </v-btn>
@@ -207,9 +207,8 @@ watch(drives, (updatedDl) => {
                   @click.native.stop="agentStore.testDevice(flashItem)"
                   style="margin-right: 16px"
                   size="small"
-                  variant="outlined"
                   height="40"
-                  color="accent"
+                  color="primary"
                 >
                   <v-icon> mdi-play </v-icon>
                   {{ $t('test_device') }}
@@ -217,7 +216,6 @@ watch(drives, (updatedDl) => {
 
                 <v-btn
                   size="small"
-                  variant="outlined"
                   :disabled="
                     flashItem.flash.state === 'flashing' ||
                     flashItem.flash.state === 'downloading' ||
@@ -226,12 +224,13 @@ watch(drives, (updatedDl) => {
                     flashItem.flash.state === 'starting' ||
                     flashItem.flash.state === 'extracting-iso' ||
                     flashItem.flash.state === 'recreating-iso' ||
-                    flashItem.flash.state === 'decompressing'
+                    flashItem.flash.state === 'decompressing' ||
+                    !flashItem.drive
                   "
                   @click.native.stop="flashStore.flashDevice(flashItem)"
                   height="40"
                   min-width="140px"
-                  color="accent"
+                  color="primary"
                 >
                   <v-icon> mdi-flash </v-icon>
                   {{ $t('flash') }}
@@ -242,6 +241,13 @@ watch(drives, (updatedDl) => {
             <div>
               <div id="removeButton">
                 <v-btn
+                  :disabled="
+                    flashItem.flash.state !== 'idle' &&
+                    flashItem.flash.state !== 'finished' &&
+                    flashItem.flash.state !== 'failed' &&
+                    flashItem.flash.state !== 'verification-canceled' &&
+                    flashItem.flash.state !== 'flashing-canceled'
+                  "
                   @click.native.stop="flashStore.removeItem(flashItem)"
                   variant="plain"
                   icon="mdi-close-circle"
@@ -371,6 +377,23 @@ watch(drives, (updatedDl) => {
   <Agent />
 </template>
 <style>
+.v-expansion-panel-title {
+  cursor: unset !important;
+  pointer-events: none;
+}
+
+.v-btn--disabled {
+  pointer-events: none !important;
+}
+
+.v-expansion-panel .v-btn {
+  pointer-events: auto;
+}
+
+.v-expansion-panel-title__overlay {
+  display: none !important;
+}
+
 .v-expansion-panels {
   padding: 2px !important;
 }

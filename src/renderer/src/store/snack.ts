@@ -29,6 +29,12 @@ export const useSnackStore = () => {
       },
       setVisible(visible: boolean) {
         this._visible = visible
+
+        if (this._visible) {
+          setTimeout(() => {
+            this._visible = false
+          }, 5000)
+        }
       },
       setText(text: string) {
         this._text = text

@@ -6,7 +6,10 @@ export async function listDrives() {
   const drives = await listdrives()
   return drives.filter(
     (d) =>
-      !d.mountpoints.find((m) => m.path.includes('boot')) && d.busType !== 'UNKNOWN' && !d.isSystem
+      !d.mountpoints.find((m) => m.path.includes('boot')) &&
+      d.busType !== 'UNKNOWN' &&
+      !d.isSystem &&
+      !d.isReadOnly
   )
 }
 

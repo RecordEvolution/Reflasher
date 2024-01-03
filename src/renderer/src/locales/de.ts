@@ -107,7 +107,8 @@ export default {
     currently_running: 'Derzeit läuft: {name}'
   },
   errors: {
-    invalid_sudo_password: 'Das eingegebene Passwort ist falsch'
+    invalid_sudo_password: 'Das eingegebene Passwort ist falsch',
+    no_drive_selected: 'Wählen Sie ein Laufwerk zum Flashen Ihres Images'
   },
   flashing_state: {
     inactive: 'Inaktiv',
