@@ -1,4 +1,4 @@
-# reflasher
+# Reflasher
 
 ## Important notes:
 
