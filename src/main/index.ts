@@ -6,6 +6,9 @@ import icon from '../../resources/icon.png?asset'
 import { join } from 'path'
 import { activeProcesses, cleanupAppImageIfExists } from './api/permissions'
 import { isFile } from './utils'
+import log from 'electron-log/main'
+
+log.initialize({ preload: true })
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -79,6 +82,19 @@ async function handleArguments(argv: string[]) {
 
 app.on('before-quit', () => {
   app.releaseSingleInstanceLock()
+})
+
+app.setAsDefaultProtocolClient('reswarm')
+app.on('open-file', async (event, path) => {
+  event.preventDefault()
+
+  if (!(await isFile(path))) return
+
+  await imageItemListReady
+
+  BrowserWindow.getAllWindows().forEach((window) =>
+    window.webContents.send('add-image-item', { filePath: path })
+  )
 })
 
 app.on('window-all-closed', async () => {

@@ -1,6 +1,6 @@
 import { automountDriveLinux, waitForMount } from './drives'
 import { getNodeModulesResourcePath } from '../utils'
-import { ChildProcess, ChildProcessWithoutNullStreams } from 'child_process'
+import { ChildProcess } from 'child_process'
 import { FlashItem, Progress } from '../../types'
 import { elevatedNodeChildProcess } from './permissions'
 import { copyFile, rename, unlink, writeFile } from 'fs/promises'

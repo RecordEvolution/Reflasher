@@ -203,6 +203,7 @@ watch(drives, (updatedDl) => {
               <div class="actionButtons">
                 <v-btn
                   v-if="flashItem.reswarm && flashItem.flash.state === 'idle'"
+                  :loading="downloadState === 'downloading'"
                   @click.native.stop="agentStore.testDevice(flashItem)"
                   style="margin-right: 16px"
                   size="small"
@@ -217,7 +218,16 @@ watch(drives, (updatedDl) => {
                 <v-btn
                   size="small"
                   variant="outlined"
-                  :loading="downloadState === 'downloading'"
+                  :disabled="
+                    flashItem.flash.state === 'flashing' ||
+                    flashItem.flash.state === 'downloading' ||
+                    flashItem.flash.state === 'configuring' ||
+                    flashItem.flash.state === 'verifying' ||
+                    flashItem.flash.state === 'starting' ||
+                    flashItem.flash.state === 'extracting-iso' ||
+                    flashItem.flash.state === 'recreating-iso' ||
+                    flashItem.flash.state === 'decompressing'
+                  "
                   @click.native.stop="flashStore.flashDevice(flashItem)"
                   height="40"
                   min-width="140px"
@@ -344,7 +354,8 @@ watch(drives, (updatedDl) => {
                 v-if="
                   flashItem.flash.state === 'finished' ||
                   flashItem.flash.state === 'failed' ||
-                  flashItem.flash.state === 'flashing-canceled'
+                  flashItem.flash.state === 'flashing-canceled' ||
+                  flashItem.flash.state === 'verification-canceled'
                 "
               >
                 <v-icon left> mdi-refresh </v-icon>
