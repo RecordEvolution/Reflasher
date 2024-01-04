@@ -12,7 +12,10 @@ type AgentState = 'active' | 'inactive' | 'failed'
 
 export const hasDocker = async () => {
   try {
-    await Promise.all([execAsync('docker --version'), execAsync('docker ps')])
+    await Promise.all([
+      execAsync('docker --version', { env: { PATH: process.env.PATH } }),
+      execAsync('docker ps', { env: { PATH: process.env.PATH } })
+    ])
     return true
   } catch (error) {
     return false

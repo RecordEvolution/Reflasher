@@ -4,7 +4,7 @@ import https from 'https'
 import { Progress } from '../../types'
 import { is } from '@electron-toolkit/utils'
 import path from 'path'
-import { APPIMAGE_MOUNT_POINT } from '../api/permissions'
+import { APPIMAGE_MOUNT_POINT, elevatedExec } from '../api/permissions'
 
 export const calculateSpeed = (
   written: number,
@@ -62,6 +62,10 @@ export const fileExists = async (filePath: string) => {
   } catch (err) {
     return false
   }
+}
+
+export const killProcessDarwin = (signal: number, pid: number) => {
+  return elevatedExec(`kill -${signal} ${pid}`)
 }
 
 export const downloadFile = async (

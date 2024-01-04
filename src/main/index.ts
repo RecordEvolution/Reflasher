@@ -5,8 +5,11 @@ import installExtension from 'electron-devtools-installer'
 import icon from '../../resources/icon.png?asset'
 import { join } from 'path'
 import { activeProcesses, cleanupAppImageIfExists } from './api/permissions'
-import { isFile } from './utils'
+import { isFile, killProcessDarwin } from './utils'
 import log from 'electron-log/main'
+import fixPath from 'fix-path'
+
+fixPath()
 
 log.initialize({ preload: true })
 
@@ -98,10 +101,16 @@ app.on('open-file', async (event, path) => {
 })
 
 app.on('window-all-closed', async () => {
-  activeProcesses.forEach((process) => {
+  activeProcesses.forEach((p) => {
     try {
-      process.kill('SIGKILL')
-    } catch (error) {}
+      if (process.platform === 'darwin' && p.pid) {
+        killProcessDarwin(9, p.pid) // SIGKILL
+      } else {
+        p.kill('SIGKILL')
+      }
+    } catch (error) {
+      // nullop
+    }
   })
 
   await cleanupAppImageIfExists().catch(console.error)
