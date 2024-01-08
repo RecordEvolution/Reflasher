@@ -10,6 +10,7 @@ import { cancelFlashing, flashDevice, imageManager } from './api/flash'
 import { isSudoPasswordSet, setSudoPassword } from './api/permissions'
 import { Drive } from 'drivelist'
 import { agentManager, hasDocker } from './api/agent'
+import { autoUpdater } from 'electron-updater'
 
 function handleListDrives() {
   return listDrives()
@@ -130,6 +131,14 @@ function handleIsSudoPasswordSet() {
   return isSudoPasswordSet()
 }
 
+function handleDownloadUpdate() {
+  return autoUpdater.downloadUpdate()
+}
+
+function handleInstallUpdate() {
+  return autoUpdater.quitAndInstall()
+}
+
 function handleCancelFlashing(id: number) {
   return cancelFlashing(id)
 }
@@ -155,6 +164,8 @@ export function setupIpcHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle(RPC.TestDevice, (_, flashItem) => handleTestDevice(flashItem))
   ipcMain.handle(RPC.StopDevice, handleStopDevice)
   ipcMain.handle(RPC.HasDocker, handleHasDocker)
+  ipcMain.handle(RPC.DownloadUpdate, handleDownloadUpdate)
+  ipcMain.handle(RPC.InstallUpdate, handleInstallUpdate)
 
   handleDriveScanner(mainWindow)
   handleAgentEvents(mainWindow)

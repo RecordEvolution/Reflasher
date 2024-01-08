@@ -32,10 +32,11 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
-    - deb
-  maintainer: record-evolution.de
-  category: Utility
+  publish:
+    provider: github
+    owner: RecordEvolution
+    repo: Reflasher
+    updaterCacheDirName: reflasher-updater
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false

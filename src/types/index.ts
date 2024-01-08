@@ -20,7 +20,11 @@ export enum RPC {
   GetPlatform = 'get-platform',
   TestDevice = 'test-device',
   StopDevice = 'stop-device',
-  HasDocker = 'has-docker'
+  HasDocker = 'has-docker',
+  HasUpdate = 'has-update',
+  UpdateStatus = 'update-status',
+  DownloadUpdate = 'download-update',
+  InstallUpdate = 'install-update'
 }
 
 export type ImageInfo = {
