@@ -43,6 +43,10 @@ const setupAutoUpdate = (mainWindow: BrowserWindow) => {
 
     autoUpdater.checkForUpdatesAndNotify()
   })
+
+  setInterval(() => {
+    autoUpdater.checkForUpdatesAndNotify()
+  }, 60000)
 }
 
 function createWindow() {
