@@ -1,5 +1,6 @@
 appId: com.recordevolution.reflasher
 productName: Reflasher
+afterSign: './scripts/notarize.js'
 directories:
   buildResources: build
 files:
@@ -26,6 +27,8 @@ nsis:
   createDesktopShortcut: always
 mac:
   entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
+  gatekeeperAssess: false
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
