@@ -4,6 +4,7 @@ import { useDrivesStore } from './drives'
 import { useBoardStore } from './boards'
 import { deepToRaw } from '@renderer/utils'
 import path from 'path-browserify'
+import { useSnackStore } from './snack'
 
 const imageTypes = ['reswarm', 'iso', 'img'] as const
 type ImageType = (typeof imageTypes)[number]
@@ -84,6 +85,15 @@ export const useFlashStore = () => {
         this.items.push(flashItem)
       },
       async flashDevice(flashItem: FlashItem) {
+        const snackstore = useSnackStore()
+
+        if (!flashItem.drive) {
+          snackstore.setText('errors.no_drive_selected')
+          snackstore.setColor('error')
+          snackstore.setVisible(true)
+          return
+        }
+
         await window.sudoDialog.openDialog()
 
         return window.api.flashDevice(deepToRaw(flashItem))

@@ -61,7 +61,7 @@ export const elevatedNodeChildProcess = (
 export const execAsync = async (
   command: string,
   options?: {
-    encoding: BufferEncoding
+    encoding?: BufferEncoding
   } & ExecOptions
 ): Promise<{ stdout: string; stderr: string }> => {
   return new Promise((res, rej) => {

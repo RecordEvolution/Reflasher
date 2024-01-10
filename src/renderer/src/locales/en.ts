@@ -106,7 +106,8 @@ export default {
     install: 'Quit and install new version ?'
   },
   errors: {
-    invalid_sudo_password: 'The password you have entered is incorrect'
+    invalid_sudo_password: 'The password you have entered is incorrect',
+    no_drive_selected: 'Please select a drive to flash your image'
   },
   flashing_state: {
     inactive: 'Inactive',

@@ -1,5 +1,6 @@
 appId: com.recordevolution.reflasher
 productName: Reflasher
+afterSign: './scripts/notarize.js'
 directories:
   buildResources: build
 files:
@@ -14,30 +15,43 @@ asarUnpack:
 win:
   executableName: Reflasher
   requestedExecutionLevel: requireAdministrator
+  publish:
+    provider: github
+    owner: RecordEvolution
+    repo: Reflasher
+    updaterCacheDirName: reflasher-updater
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${name}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
   entitlementsInherit: build/entitlements.mac.plist
+  hardenedRuntime: true
+  gatekeeperAssess: false
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  publish:
+    provider: github
+    owner: RecordEvolution
+    repo: Reflasher
+    updaterCacheDirName: reflasher-updater
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${arch}.${ext}
 linux:
   target:
     - AppImage
-    - snap
-    - deb
-  maintainer: record-evolution.de
-  category: Utility
+  publish:
+    provider: github
+    owner: RecordEvolution
+    repo: Reflasher
+    updaterCacheDirName: reflasher-updater
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}.${ext}
 npmRebuild: false
 protocols:
   - name: reswarm-protocol

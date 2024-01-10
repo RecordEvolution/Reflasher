@@ -1,5 +1,5 @@
 import { automountDriveLinux, waitForMount } from './drives'
-import { getNodeModulesResourcePath } from '../utils'
+import { getNodeModulesResourcePath, killProcessDarwin } from '../utils'
 import { ChildProcess } from 'child_process'
 import { FlashItem, Progress } from '../../types'
 import { elevatedNodeChildProcess } from './permissions'
@@ -206,6 +206,10 @@ export const flashDevice = async (
 export const cancelFlashing = async (id: number) => {
   const flashProcess = activeFlashProcesses.get(id)
   if (flashProcess && flashProcess.pid) {
-    flashProcess.kill('SIGTERM')
+    if (process.platform === 'darwin') {
+      killProcessDarwin(15, flashProcess.pid) // SIGTERM
+    } else {
+      flashProcess.kill('SIGTERM')
+    }
   }
 }

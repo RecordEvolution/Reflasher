@@ -1,14 +1,57 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { setupIpcHandlers } from './ipcHandlers'
-import installExtension from 'electron-devtools-installer'
-import icon from '../../resources/icon.png?asset'
 import { join } from 'path'
 import { activeProcesses, cleanupAppImageIfExists } from './api/permissions'
-import { isFile } from './utils'
+import { isFile, killProcessDarwin } from './utils'
+import { autoUpdater } from 'electron-updater'
 import log from 'electron-log/main'
+import fixPath from 'fix-path'
+import semver from 'semver'
+import installExtension from 'electron-devtools-installer'
+import { version } from '../../package.json'
+import icon from '../../resources/icon.png?asset'
 
+// Initialization
 log.initialize({ preload: true })
+autoUpdater.autoDownload = false
+fixPath()
+
+const setupAutoUpdate = (mainWindow: BrowserWindow) => {
+  const page = mainWindow.webContents
+
+  page.once('did-frame-finish-load', async () => {
+    autoUpdater.on('error', (err) => {
+      page.send('update-status', { error: err })
+    })
+
+    autoUpdater.on('checking-for-update', () => {})
+    autoUpdater.on('update-available', (info) => {
+      const comparison = semver.compare(info.version, version)
+      if (comparison > 0) {
+        page.send('update-status', { state: 'update-available' })
+      }
+    })
+
+    autoUpdater.on('download-progress', (progressObj) => {
+      page.send('update-status', { state: 'update-progress', progress: progressObj })
+    })
+
+    autoUpdater.on('update-downloaded', () => {
+      page.send('update-status', { state: 'update-downloaded' })
+    })
+
+    autoUpdater.checkForUpdates().catch((err) => {
+      console.error('Failed to check for updates:', err)
+    })
+  })
+
+  setInterval(() => {
+    autoUpdater.checkForUpdates().catch((err) => {
+      console.error('Failed to check for updates:', err)
+    })
+  }, 60000)
+}
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -17,7 +60,6 @@ function createWindow() {
     frame: true,
     resizable: false,
     maximizable: false,
-    title: 'Reflasher',
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -30,6 +72,10 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+  })
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.setTitle(`Reflasher v${version}`)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -53,6 +99,8 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  setupAutoUpdate(mainWindow)
 
   return mainWindow
 }
@@ -98,10 +146,16 @@ app.on('open-file', async (event, path) => {
 })
 
 app.on('window-all-closed', async () => {
-  activeProcesses.forEach((process) => {
+  activeProcesses.forEach((p) => {
     try {
-      process.kill('SIGKILL')
-    } catch (error) {}
+      if (process.platform === 'darwin' && p.pid) {
+        killProcessDarwin(9, p.pid) // SIGKILL
+      } else {
+        p.kill('SIGKILL')
+      }
+    } catch (error) {
+      // nullop
+    }
   })
 
   await cleanupAppImageIfExists().catch(console.error)

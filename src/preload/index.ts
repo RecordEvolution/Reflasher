@@ -32,7 +32,9 @@ const api = {
   setSudoPassword: (password: string) => ipcRenderer.invoke(RPC.SetSudoPassword, password),
   isSudoPasswordSet: () => ipcRenderer.invoke(RPC.IsSudoPasswordSet) as Promise<boolean>,
   getPlatform: () => ipcRenderer.invoke(RPC.GetPlatform) as Promise<string>,
-  hasDocker: () => ipcRenderer.invoke(RPC.HasDocker) as Promise<boolean>
+  hasDocker: () => ipcRenderer.invoke(RPC.HasDocker) as Promise<boolean>,
+  downloadUpdate: () => ipcRenderer.invoke(RPC.DownloadUpdate) as Promise<void>,
+  installUpdate: () => ipcRenderer.invoke(RPC.InstallUpdate) as Promise<void>
 }
 
 export type Api = typeof api
