@@ -9,6 +9,7 @@ exports.default = async function notarizing(context) {
 
   const appName = context.packager.appInfo.productFilename
 
+  console.log('Notarizing Reflasher app....')
   return await notarize({
     appBundleId: 'com.recordevolution.reflasher',
     appPath: `${appOutDir}/${appName}.app`,
