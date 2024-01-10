@@ -21,16 +21,16 @@ const setupAutoUpdate = (mainWindow: BrowserWindow) => {
   const page = mainWindow.webContents
 
   page.once('did-frame-finish-load', async () => {
+    autoUpdater.on('error', (err) => {
+      page.send('update-status', { error: err })
+    })
+
     autoUpdater.on('checking-for-update', () => {})
     autoUpdater.on('update-available', (info) => {
       const comparison = semver.compare(info.version, version)
       if (comparison > 0) {
         page.send('update-status', { state: 'update-available' })
       }
-    })
-
-    autoUpdater.on('error', (err) => {
-      page.send('update-status', { error: err })
     })
 
     autoUpdater.on('download-progress', (progressObj) => {
@@ -41,11 +41,15 @@ const setupAutoUpdate = (mainWindow: BrowserWindow) => {
       page.send('update-status', { state: 'update-downloaded' })
     })
 
-    autoUpdater.checkForUpdatesAndNotify()
+    autoUpdater.checkForUpdates().catch((err) => {
+      console.error('Failed to check for updates:', err)
+    })
   })
 
   setInterval(() => {
-    autoUpdater.checkForUpdatesAndNotify()
+    autoUpdater.checkForUpdates().catch((err) => {
+      console.error('Failed to check for updates:', err)
+    })
   }, 60000)
 }
 
