@@ -46,9 +46,7 @@ sha512: pfNijx9AZuFEzN7/UTDhoKlKeG72A+c3EdGoBE+X6fyn7nO1ZO8McNcZFaExbO0RhN+svnqF
 releaseDate: '2024-01-10T13:54:20.948Z'
 ```
 
-### Notarization
-
-### MacOS
+#### Notarization
 
 In order to notarize the app for MacOS, you need to have the correct keys installed (see specific laptops).
 
