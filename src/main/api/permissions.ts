@@ -224,9 +224,11 @@ export const childProcess = (
   onExit?: (code: number | null, signal: NodeJS.Signals | null) => void,
   options?: SpawnOptionsWithoutStdio & { elevated?: boolean }
 ) => {
+
+  const sudoSupportedOS = (process.platform === 'linux' || process.platform === 'darwin')
   let finalCommand = command
   let finalArgs = args
-  if (options?.elevated) {
+  if (options?.elevated && sudoSupportedOS) {
     finalCommand = 'sudo'
     finalArgs = ['-E', '-S', command, ...args]
   }
@@ -235,7 +237,7 @@ export const childProcess = (
   const childProcess = spawn(finalCommand, finalArgs, optionsWithoutElevated)
   activeProcesses.push(childProcess)
 
-  if (options?.elevated) {
+  if (options?.elevated && sudoSupportedOS) {
     childProcess.stdin.write(getSudoPassword())
     childProcess.stdin.end()
   }
