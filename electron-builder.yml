@@ -57,11 +57,20 @@ protocols:
   - name: ironflock-protocol
     schemes:
       - flock
+  - name: reswarm-protocol
+    schemes:
+      - reswarm
 fileAssociations:
   - ext: flock
     description: IronFlock Device File
     icon: src/assets/icons/icon.icns
-    mimeType: text/x-flock
+    mimeType: text/x-reswarm
+    role: Viewer
+fileAssociations:
+  - ext: reswarm
+    description: Reswarm Device File
+    icon: src/assets/icons/icon.icns
+    mimeType: text/x-reswarm
     role: Viewer
 electronVersion: 19.1.9 # Version
 publish:

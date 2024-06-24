@@ -6,7 +6,7 @@ import { deepToRaw } from '@renderer/utils'
 import path from 'path-browserify'
 import { useSnackStore } from './snack'
 
-const imageTypes = ['flock', 'iso', 'img'] as const
+const imageTypes = ['flock', 'reswarm', 'iso', 'img'] as const
 type ImageType = (typeof imageTypes)[number]
 
 type FlashStoreState = {
@@ -62,7 +62,7 @@ export const useFlashStore = () => {
           drive: defaultDrive
         }
 
-        if (fileType === 'flock') {
+        if (fileType === 'flock' || fileType === 'reswarm') {
           const configFileString = (await window.api.readFile(fullPath, {
             encoding: 'utf8'
           })) as string
