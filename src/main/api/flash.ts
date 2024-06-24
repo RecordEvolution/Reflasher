@@ -32,8 +32,23 @@ const copyConfigFile = async (drive: Drive, reswarmConfigPath: string) => {
   }
 
   const targetPath = mountedDrive.mountpoints[0].path
+  const fileBaseName = path.basename(reswarmConfigPath)
 
-  return copyFile(reswarmConfigPath, path.join(targetPath, path.basename(reswarmConfigPath)))
+  // Backwards compatibility for .flock files
+  // It will always create a second config file with the name .reswarm in case a .flock file is provided
+  try {
+    const fileBaseNameSplit = fileBaseName.split(".")
+
+    if (fileBaseNameSplit[0] === 'flock') {
+      const dotReswarmFileName = fileBaseNameSplit[0] + '.reswarm'
+      await copyFile(reswarmConfigPath, path.join(targetPath, dotReswarmFileName))  
+
+    }
+  } catch (error) {
+    console.error("Failed to copy a copy of .flock")
+  }
+
+  return copyFile(reswarmConfigPath, path.join(targetPath, fileBaseName))
 }
 
 const getReswarmImage = async (
