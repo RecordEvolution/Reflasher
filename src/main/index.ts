@@ -132,7 +132,7 @@ app.on('before-quit', () => {
   app.releaseSingleInstanceLock()
 })
 
-app.setAsDefaultProtocolClient('reswarm')
+app.setAsDefaultProtocolClient('ironflock')
 app.on('open-file', async (event, path) => {
   event.preventDefault()
 

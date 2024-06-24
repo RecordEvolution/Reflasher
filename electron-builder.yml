@@ -54,14 +54,14 @@ appImage:
   artifactName: ${name}.${ext}
 npmRebuild: false
 protocols:
-  - name: reswarm-protocol
+  - name: ironflock-protocol
     schemes:
-      - reswarm
+      - ironflock
 fileAssociations:
-  - ext: reswarm
-    description: Reswarm Device File
+  - ext: ironflock
+    description: IronFlock Device File
     icon: src/assets/icons/icon.icns
-    mimeType: text/x-reswarm
+    mimeType: text/x-ironflock
     role: Viewer
 electronVersion: 19.1.9 # Version
 publish:

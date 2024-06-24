@@ -85,7 +85,7 @@ const getReswarmImage = async (
       updateState({ percentage, type: 'extracting-iso' })
     })
 
-    await writeFileISOContents(`boot/${config.name}.reswarm`, JSON.stringify(config), deviceId)
+    await writeFileISOContents(`boot/${config.name}.ironflock`, JSON.stringify(config), deviceId)
 
     const recreatedImagePath = await rebuildISOFromContents(imagePath, deviceId, (percentage) => {
       updateState({ percentage, type: 'recreating-iso' })

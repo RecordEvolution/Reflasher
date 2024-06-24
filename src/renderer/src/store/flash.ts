@@ -62,7 +62,7 @@ export const useFlashStore = () => {
           drive: defaultDrive
         }
 
-        if (fileType === 'reswarm') {
+        if (fileType === 'ironflock') {
           const configFileString = (await window.api.readFile(fullPath, {
             encoding: 'utf8'
           })) as string
