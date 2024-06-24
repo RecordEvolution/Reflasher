@@ -69,7 +69,7 @@ export const useFlashStore = () => {
 
           const config = JSON.parse(configFileString) as ReswarmConfig
           const board = boardStore.boards.find(
-            (b) => b.model === config.board.model
+            (b) => b.model === config?.board?.model
           ) as SupportedBoard
 
           // It can happen that the boards are not intialized (e.g. when opening Reflasher with .reswarm file)
