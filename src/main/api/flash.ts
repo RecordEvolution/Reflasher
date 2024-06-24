@@ -38,11 +38,10 @@ const copyConfigFile = async (drive: Drive, reswarmConfigPath: string) => {
   // It will always create a second config file with the name .reswarm in case a .flock file is provided
   try {
     const fileBaseNameSplit = fileBaseName.split(".")
-
-    if (fileBaseNameSplit[0] === 'flock') {
+    if (fileBaseNameSplit[1] === 'flock') {
       const dotReswarmFileName = fileBaseNameSplit[0] + '.reswarm'
+      console.log("Creating copy of .flock file as .reswarm for backwards compatibility")
       await copyFile(reswarmConfigPath, path.join(targetPath, dotReswarmFileName))  
-
     }
   } catch (error) {
     console.error("Failed to copy a copy of .flock")
