@@ -96,7 +96,6 @@ For AppImages, it is sadly not straightforward to access the packaged node_modul
 
 ## Electron / Vue
 
-
 ### API
 
 Electron uses an RPC API to facilitate communication between frontend and backend tasks. All operations requiring system API calls must be executed on the Electron backend.
@@ -112,6 +111,14 @@ We use [Pinia](https://github.com/vuejs/pinia), a straightforward and simple glo
 ### Translations
 
 For app-wide translations, we utilize the `I18next` internationalization framework. Adding, updating, creating, and deleting translations is as simple as creating or editing a file in the `renderer/locales` folder and then registering the new languages in the `renderer/src/main.ts` file.
+
+### Extra binaries
+
+To rebuild the `.iso` image, we use the `xorriso` binary. Unfortunately, this binary is not available on macOS and Windows. Therefore, we provide a statically cross-compiled binary for both Windows and Linux.
+
+These binaries are distributed using the [extraResources](https://www.electron.build/configuration/contents.html#extraresources) property of Electron Builder and are utilized during the flashing process.
+
+You can find the binaries in the `resources/binaries` folder.
 
 ## Important notes:
 
