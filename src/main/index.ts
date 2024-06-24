@@ -132,7 +132,7 @@ app.on('before-quit', () => {
   app.releaseSingleInstanceLock()
 })
 
-app.setAsDefaultProtocolClient('ironflock')
+app.setAsDefaultProtocolClient('flock')
 app.on('open-file', async (event, path) => {
   event.preventDefault()
 

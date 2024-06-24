@@ -56,12 +56,12 @@ npmRebuild: false
 protocols:
   - name: ironflock-protocol
     schemes:
-      - ironflock
+      - flock
 fileAssociations:
-  - ext: ironflock
+  - ext: flock
     description: IronFlock Device File
     icon: src/assets/icons/icon.icns
-    mimeType: text/x-ironflock
+    mimeType: text/x-flock
     role: Viewer
 electronVersion: 19.1.9 # Version
 publish:
