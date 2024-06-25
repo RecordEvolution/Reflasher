@@ -49,7 +49,7 @@ watch(sudoDialog, (newVal) => {
 
       <div>
         <v-toolbar-title>
-          <p style="font-family: 'Myriad Variable Concept';">EgGen</p>
+          <p style="font-family: 'Myriad Variable Concept';">FlockFlasher</p>
         </v-toolbar-title>
       </div>
 

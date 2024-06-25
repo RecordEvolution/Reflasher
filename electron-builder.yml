@@ -1,5 +1,5 @@
-appId: com.recordevolution.eggen
-productName: EgGen
+appId: com.recordevolution.flockflasher
+productName: FlockFlasher
 afterSign: './scripts/notarize.js'
 directories:
   buildResources: build
@@ -13,7 +13,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: Reflasher
+  executableName: FlockFlasher
   requestedExecutionLevel: requireAdministrator
   publish:
     provider: github

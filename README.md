@@ -58,11 +58,11 @@ After that, the `npm run release` process will automatically notarize the app fo
 
 ## EtcherSDK
 
-EgGen uses the etcher-sdk to flash and mount drives.
+FlockFlasher uses the etcher-sdk to flash and mount drives.
 
 The `etcher-sdk` requires root permissions to access drives and flash drives.
 
-In the current build for MacOS and Linux, we must spawn a subprocess within the EgGen that gets elevated.
+In the current build for MacOS and Linux, we must spawn a subprocess within the FlockFlasher that gets elevated.
 
 The easiest way to do that is to spawn a root process using sudo. This process will be a node process that runs the `etcher-sdk` code.
 
@@ -83,7 +83,7 @@ Since we spawn a subprocess, we need to be able to read back the flashing progre
 
 In order to access the USB drives in Windows, the `etcher-sdk` must include the `winusb-driver-generator` package. When running the `npm i` command on Windows, it will automatically and temporarily add this package using the `scripts/windows.js` script.
 
-In order for Gulp to be able to build EgGen on Windows, it must compile the underlying winusb driver.
+In order for Gulp to be able to build FlockFlasher on Windows, it must compile the underlying winusb driver.
 
 Before you can do this, you must have the [Windows Driver Kit](https://learn.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk) (WDK) installed.
 

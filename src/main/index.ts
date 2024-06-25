@@ -75,7 +75,7 @@ function createWindow() {
   })
 
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.setTitle(`EgGen v${version}`)
+    mainWindow.setTitle(`FlockFlasher v${version}`)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
