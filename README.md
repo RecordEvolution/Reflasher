@@ -1,4 +1,4 @@
-# Reflasher
+# FlockFlasher
 
 All you need to debug the application is:
 
@@ -29,19 +29,19 @@ In other words, you have to manually stitch both files together as follows:
 ```
 version: 2.0.3
 files:
-  - url: Reflasher-2.0.3-mac.zip
+  - url: FlockFlasher-2.0.3-mac.zip
     sha512: pfNijx9AZuFEzN7/UTDhoKlKeG72A+c3EdGoBE+X6fyn7nO1ZO8McNcZFaExbO0RhN+svnqF6JrWPenIKEfdSQ==
     size: 133448877
-  - url: Reflasher-2.0.3-arm64-mac.zip
+  - url: FlockFlasher-2.0.3-arm64-mac.zip
     sha512: 8XOTrqvnGfmM1V9MAivyQ9BPbWyqtkTQ16pZAzSCRUwgLTtRswJZJ0cHIqYw1+6+yRWFdIgQXt1cu6YWkUpWzg==
     size: 128751915
-  - url: reflasher-x64.dmg
+  - url: flockflasher-x64.dmg
     sha512: b9XzDuF/+c3JCA/LLFciLUqyOw12xHmh0vZkZpvS6V8GCzFmz1maEXOkBYAYv9YQLcxhGaM0aMMVuQNiWHgjGg==
     size: 138481744
-  - url: reflasher-arm64.dmg
+  - url: flockflasher-arm64.dmg
     sha512: jFZIxhz615EI2autjm4wnKOLGZchSKNOd3zmlRMFXdQjFEIZz6C8szgzjlYyzCfYH5hPOc+EQgbDVPIOla3Zew==
     size: 133845710
-path: Reflasher-2.0.3-mac.zip
+path: FlockFlasher-2.0.3-mac.zip
 sha512: pfNijx9AZuFEzN7/UTDhoKlKeG72A+c3EdGoBE+X6fyn7nO1ZO8McNcZFaExbO0RhN+svnqF6JrWPenIKEfdSQ==
 releaseDate: '2024-01-10T13:54:20.948Z'
 ```
@@ -58,11 +58,11 @@ After that, the `npm run release` process will automatically notarize the app fo
 
 ## EtcherSDK
 
-Reflasher uses the etcher-sdk to flash and mount drives.
+FlockFlasher uses the etcher-sdk to flash and mount drives.
 
 The `etcher-sdk` requires root permissions to access drives and flash drives.
 
-In the current build for MacOS and Linux, we must spawn a subprocess within the Reflasher that gets elevated.
+In the current build for MacOS and Linux, we must spawn a subprocess within the FlockFlasher that gets elevated.
 
 The easiest way to do that is to spawn a root process using sudo. This process will be a node process that runs the `etcher-sdk` code.
 
@@ -83,7 +83,7 @@ Since we spawn a subprocess, we need to be able to read back the flashing progre
 
 In order to access the USB drives in Windows, the `etcher-sdk` must include the `winusb-driver-generator` package. When running the `npm i` command on Windows, it will automatically and temporarily add this package using the `scripts/windows.js` script.
 
-In order for Gulp to be able to build the Reflasher on Windows, it must compile the underlying winusb driver.
+In order for Gulp to be able to build FlockFlasher on Windows, it must compile the underlying winusb driver.
 
 Before you can do this, you must have the [Windows Driver Kit](https://learn.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk) (WDK) installed.
 

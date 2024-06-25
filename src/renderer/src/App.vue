@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import reflasherLogoWhite from './assets/flasher-white.svg'
+
+import flockFlasherLogo from './assets/icon.png'
+
 import Settings from './components/Settings.vue'
 import Drives from './components/Drives.vue'
 import Devices from './components/Devices.vue'
@@ -50,13 +52,10 @@ watch(sudoDialog, (newVal) => {
 
       <div>
         <v-toolbar-title>
-          <img
-            :src="reflasherLogoWhite"
-            alt="Reflasher-logo"
-            width="100"
-            height="70"
-            style="margin-top: 7px"
-          />
+          <div style="display: flex; justify-content: center; align-items: center;">
+            <img :src="flockFlasherLogo" alt="Reflasher-logo" width="30" height="30" style="margin-right: 10px;" />
+            <p>FlockFlasher</p>
+          </div>
         </v-toolbar-title>
       </div>
 
@@ -84,23 +83,16 @@ watch(sudoDialog, (newVal) => {
     <v-footer fixed class="pa-0" color="primary">
       <v-container fluid fill-width class="ma-0 pa-0">
         <div class="d-flex justify-center ma-0 mp-0">
-          <v-btn variant="text" color="primary" id="reswarm-link-button" rounded fixed>
-            Record Evolution IoT Development Studio
+          <v-btn href="https://studio.record-evolution.com/" target="_blank" variant="text" color="primary"
+            id="reswarm-link-button" rounded fixed>
+            IronFlock Platform
           </v-btn>
         </div>
       </v-container>
     </v-footer>
 
-    <v-banner
-      id="updaterBar"
-      v-show="false"
-      color="info"
-      rounded
-      elevation="10"
-      style="z-index: 99"
-      height="120"
-      width="370"
-    >
+    <v-banner id="updaterBar" v-show="false" color="info" rounded elevation="10" style="z-index: 99" height="120"
+      width="370">
       <div id="updaterText"></div>
       <div>
         <v-btn class="ma-2" min-width="120px">
