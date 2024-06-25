@@ -1,4 +1,4 @@
-# Reflasher
+# FlockFlasher
 
 All you need to debug the application is:
 
@@ -29,19 +29,19 @@ In other words, you have to manually stitch both files together as follows:
 ```
 version: 2.0.3
 files:
-  - url: Reflasher-2.0.3-mac.zip
+  - url: FlockFlasher-2.0.3-mac.zip
     sha512: pfNijx9AZuFEzN7/UTDhoKlKeG72A+c3EdGoBE+X6fyn7nO1ZO8McNcZFaExbO0RhN+svnqF6JrWPenIKEfdSQ==
     size: 133448877
-  - url: Reflasher-2.0.3-arm64-mac.zip
+  - url: FlockFlasher-2.0.3-arm64-mac.zip
     sha512: 8XOTrqvnGfmM1V9MAivyQ9BPbWyqtkTQ16pZAzSCRUwgLTtRswJZJ0cHIqYw1+6+yRWFdIgQXt1cu6YWkUpWzg==
     size: 128751915
-  - url: reflasher-x64.dmg
+  - url: flockflasher-x64.dmg
     sha512: b9XzDuF/+c3JCA/LLFciLUqyOw12xHmh0vZkZpvS6V8GCzFmz1maEXOkBYAYv9YQLcxhGaM0aMMVuQNiWHgjGg==
     size: 138481744
-  - url: reflasher-arm64.dmg
+  - url: flockflasher-arm64.dmg
     sha512: jFZIxhz615EI2autjm4wnKOLGZchSKNOd3zmlRMFXdQjFEIZz6C8szgzjlYyzCfYH5hPOc+EQgbDVPIOla3Zew==
     size: 133845710
-path: Reflasher-2.0.3-mac.zip
+path: FlockFlasher-2.0.3-mac.zip
 sha512: pfNijx9AZuFEzN7/UTDhoKlKeG72A+c3EdGoBE+X6fyn7nO1ZO8McNcZFaExbO0RhN+svnqF6JrWPenIKEfdSQ==
 releaseDate: '2024-01-10T13:54:20.948Z'
 ```
