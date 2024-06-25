@@ -1,5 +1,6 @@
 appId: com.recordevolution.flockflasher
 productName: FlockFlasher
+afterSign: './scripts/notarize.js'
 directories:
   buildResources: build
 files:
