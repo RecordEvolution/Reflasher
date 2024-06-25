@@ -15,7 +15,7 @@ export default {
   add_device: 'Add device',
   no_device_name: 'No device name',
   no_devices_in_list: 'No devices in list',
-  devices_list_subtitle: 'Add device by selecting a Reswarm or image file',
+  devices_list_subtitle: 'Add a device by selecting a .flock or disk image file',
   swarm: 'Swarm',
   no_swarm: 'No Swarm',
   no_swarm_owner: 'No Swarm owner',

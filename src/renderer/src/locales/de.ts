@@ -15,7 +15,7 @@ export default {
   add_device: 'Gerät hinzufügen',
   no_device_name: 'Kein Gerätename',
   no_devices_in_list: 'Keine Geräte in der Liste',
-  devices_list_subtitle: 'Füge ein Gerät hinzu durch Auswahl einer Reswarm oder Image Datei',
+  devices_list_subtitle: 'Gerät hinzufügen durch Auswahl einer .flock- oder Image-Datei',
   swarm: 'Schwarm',
   no_swarm: 'Kein Schwarm',
   no_swarm_owner: 'Kein Schwarmeigentümer',
