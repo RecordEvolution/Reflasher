@@ -13,7 +13,7 @@ exports.default = async function notarizing(context) {
   return await notarize({
     tool: 'notarytool',
     teamId: '9D2S7J8B4D',
-    appBundleId: 'com.recordevolution.reflasher',
+    appBundleId: 'com.recordevolution.eggen',
     appPath: `${appOutDir}/${appName}.app`,
     appleId: process.env.APPLEID,
     appleIdPassword: process.env.APPLEIDPASS

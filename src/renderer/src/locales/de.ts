@@ -59,7 +59,7 @@ export default {
   eta: 'ETA',
   authentication_required: 'Authentifizierung erforderlich',
   authentication_explanation:
-    'Bitte geben Sie Ihr Administrator Passwort für diesen Computer im unteren Feld ein, um dem Reflasher zu erlauben die ausgewählten Laufwerke zu überschreiben und alle Partition zu löschen',
+    'Bitte geben Sie Ihr Administrator Passwort für diesen Computer im unteren Feld ein, um dem EgGen zu erlauben die ausgewählten Laufwerke zu überschreiben und alle Partition zu löschen',
   admin_password: 'Administrator Passwort',
   sd_cards_and_drives: 'SD Karten und USB Laufwerke',
   use_sd_cards_only: 'Benutze ausschließlich SD Karten',
@@ -72,8 +72,8 @@ export default {
   environment_variables_not_set:
     'Die folgende Umgebungsvariable ist ungültig oder nicht definiert: | Die folgenden Umgebungsvariablen sind ungültig oder nicht definiert:',
   please_ensure_environment_variables:
-    'Um den Reflasher zu benutzen, stellen Sie bitte sicher, dass diese Umgebungsvariable richtig definiert wurde. | Um den Reflasher verwenden zu können, stellen Sie bitte sicher, dass die Umgebungsvariablen richtig definiert wurden.',
-  exit_reflasher: 'Reflasher beenden',
+    'Um den EgGen zu benutzen, stellen Sie bitte sicher, dass diese Umgebungsvariable richtig definiert wurde. | Um den EgGen verwenden zu können, stellen Sie bitte sicher, dass die Umgebungsvariablen richtig definiert wurden.',
+  exit_reflasher: 'EgGen beenden',
   update_reagent: 'REagent aktualisieren',
   download_reagent: 'REagent herunterladen',
   docker_is_not_running: 'Docker läuft nicht',
@@ -99,8 +99,8 @@ export default {
   check_speed_drive: 'Kontrollieren Sie die angegebene Geschwindigkeit Ihres Flash-Laufwerks',
   check_documentation: 'Lesen Sie die Dokumentation',
   update: {
-    announce: 'Reflasher Update verfügbar',
-    download: 'Lade Reflasher Update',
+    announce: 'EgGen Update verfügbar',
+    download: 'Lade EgGen Update',
     install: 'Beenden und Update installieren ?'
   },
   agent: {

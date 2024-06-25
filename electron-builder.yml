@@ -1,5 +1,5 @@
-appId: com.recordevolution.reflasher
-productName: Reflasher
+appId: com.recordevolution.eggen
+productName: EgGen
 afterSign: './scripts/notarize.js'
 directories:
   buildResources: build

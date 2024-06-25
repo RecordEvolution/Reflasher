@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import reflasherLogoWhite from './assets/flasher-white.svg'
 import Settings from './components/Settings.vue'
 import Drives from './components/Drives.vue'
 import Devices from './components/Devices.vue'
@@ -50,13 +49,7 @@ watch(sudoDialog, (newVal) => {
 
       <div>
         <v-toolbar-title>
-          <img
-            :src="reflasherLogoWhite"
-            alt="Reflasher-logo"
-            width="100"
-            height="70"
-            style="margin-top: 7px"
-          />
+          <p style="font-family: 'Myriad Variable Concept';">EgGen</p>
         </v-toolbar-title>
       </div>
 
@@ -84,8 +77,8 @@ watch(sudoDialog, (newVal) => {
     <v-footer fixed class="pa-0" color="primary">
       <v-container fluid fill-width class="ma-0 pa-0">
         <div class="d-flex justify-center ma-0 mp-0">
-          <v-btn variant="text" color="primary" id="reswarm-link-button" rounded fixed>
-            Record Evolution IoT Development Studio
+          <v-btn href="https://studio.record-evolution.com/" target="_blank" variant="text" color="primary" id="reswarm-link-button" rounded fixed>
+            IronFlock IoT Development Studio
           </v-btn>
         </div>
       </v-container>

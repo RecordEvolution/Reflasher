@@ -1,9 +1,9 @@
 {
-  "name": "reflasher",
+  "name": "eggen",
   "version": "2.0.3",
   "description": "An efficient, modern and reliable flashing tool for IoT applications",
-  "author": "Record Evolution GmbH",
-  "publisher": "Record Evolution GmbH",
+  "author": "IronFlock GmbH",
+  "publisher": "IronFlock GmbH",
   "main": "./out/main/index.js",
   "license": "MIT",
   "homepage": "https://www.electronjs.org",

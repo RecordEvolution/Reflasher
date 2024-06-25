@@ -5,3 +5,10 @@ html {
 .v-divider {
   margin-bottom: 8px;
 }
+
+@font-face {
+  font-family: "Myriad Variable Concept";
+  font-display: auto;
+  font-style: normal;
+  src: url("src/assets/fonts/MyriadVariableConcept/MyriadVariableConcept.woff2");
+}

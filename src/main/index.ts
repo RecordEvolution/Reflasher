@@ -75,7 +75,7 @@ function createWindow() {
   })
 
   mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.setTitle(`Reflasher v${version}`)
+    mainWindow.setTitle(`EgGen v${version}`)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
