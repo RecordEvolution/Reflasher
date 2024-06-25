@@ -66,7 +66,6 @@ fileAssociations:
     icon: src/assets/icons/icon.icns
     mimeType: text/x-reswarm
     role: Viewer
-fileAssociations:
   - ext: reswarm
     description: Reswarm Device File
     icon: src/assets/icons/icon.icns
