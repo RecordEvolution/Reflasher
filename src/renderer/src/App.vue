@@ -85,7 +85,7 @@ watch(sudoDialog, (newVal) => {
         <div class="d-flex justify-center ma-0 mp-0">
           <v-btn href="https://studio.record-evolution.com/" target="_blank" variant="text" color="primary"
             id="reswarm-link-button" rounded fixed>
-            IronFlock IoT Development Studio
+            IronFlock Platform
           </v-btn>
         </div>
       </v-container>
